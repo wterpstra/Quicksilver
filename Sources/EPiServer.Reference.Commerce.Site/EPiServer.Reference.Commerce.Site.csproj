@@ -169,6 +169,9 @@
     <Reference Include="Geta.ServiceApi.Commerce, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Geta.ServiceApi.Commerce.1.2.0\lib\net452\Geta.ServiceApi.Commerce.dll</HintPath>
     </Reference>
+    <Reference Include="Geta.ServiceApi.Commerce.WebHooks, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Geta.ServiceApi.Commerce.WebHooks.1.2.0\lib\net452\Geta.ServiceApi.Commerce.WebHooks.dll</HintPath>
+    </Reference>
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
       <HintPath>..\..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
@@ -243,6 +246,12 @@
     </Reference>
     <Reference Include="Microsoft.AspNet.Identity.Owin, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.AspNet.Identity.Owin.2.2.1\lib\net45\Microsoft.AspNet.Identity.Owin.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.WebHooks.Common, Version=1.2.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AspNet.WebHooks.Common.1.2.1\lib\net45\Microsoft.AspNet.WebHooks.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.WebHooks.Custom, Version=1.2.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AspNet.WebHooks.Custom.1.2.1\lib\net45\Microsoft.AspNet.WebHooks.Custom.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Azure.KeyVault.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.Azure.KeyVault.Core.1.0.0\lib\net40\Microsoft.Azure.KeyVault.Core.dll</HintPath>
