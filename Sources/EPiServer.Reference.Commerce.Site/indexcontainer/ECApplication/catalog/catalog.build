@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<Build xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <LastBuildDate>2017-09-24T14:38:32.4883309+02:00</LastBuildDate>
+  <Status>Completed</Status>
+  <Properties>
+    <Property name="StartingRecord" value="1" />
+    <Property name="LastRecordKey" value="500" />
+    <Property name="CatalogName" value="Fashion" />
+  </Properties>
+</Build>

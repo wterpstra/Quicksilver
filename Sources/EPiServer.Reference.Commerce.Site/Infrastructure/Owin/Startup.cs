@@ -94,14 +94,14 @@ namespace EPiServer.Reference.Commerce.Site.Infrastructure.Owin
         /// <param name="app">The application to associate with the login provider.</param>
         private static void EnableGoogleAccountLogin(IAppBuilder app)
         {
-            // Note that the id and secret code below are fictitious and will not work when calling Google.
-            GoogleOAuth2AuthenticationOptions googleOptions = new GoogleOAuth2AuthenticationOptions()
-            {
-                ClientId = "<ChangeThis>",
-                ClientSecret = "<ChangeThis>",
-            };
-            googleOptions.Scope.Add("email");
-            app.UseGoogleAuthentication(googleOptions);
+            //// Note that the id and secret code below are fictitious and will not work when calling Google.
+            //GoogleOAuth2AuthenticationOptions googleOptions = new GoogleOAuth2AuthenticationOptions()
+            //{
+            //    ClientId = "<ChangeThis>",
+            //    ClientSecret = "<ChangeThis>",
+            //};
+            //googleOptions.Scope.Add("email");
+            //app.UseGoogleAuthentication(googleOptions);
         }
 
         /// <summary>
