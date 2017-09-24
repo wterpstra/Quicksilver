@@ -370,6 +370,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestSupport\Fakes\FakeShipment.cs" />
     <Compile Include="TestSupport\Fakes\FakeUrlAuthorization.cs" />
+    <Compile Include="TestSupport\ServiceAPIBearerTokenGenerator.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config">

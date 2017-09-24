@@ -14,6 +14,7 @@ using Microsoft.Owin.Security.MicrosoftAccount;
 using Microsoft.Owin.Security.Twitter;
 using Owin;
 using System;
+using EPiServer.ServiceApi.Owin;
 
 [assembly: OwinStartup(typeof(EPiServer.Reference.Commerce.Site.Infrastructure.Owin.Startup))]
 namespace EPiServer.Reference.Commerce.Site.Infrastructure.Owin
@@ -79,6 +80,9 @@ namespace EPiServer.Reference.Commerce.Site.Infrastructure.Owin
             //EnableTwitterAccountLogin(app);
             //EnableFacebookAccountLogin(app);
             //EnableGoogleAccountLogin(app);
+
+            // Enable bearer token authentication using ASP.NET Identity for Service Api
+            app.UseServiceApiIdentityTokenAuthorization<ApplicationUserManager<SiteUser>, SiteUser>();
         }
 
         /// <summary>
