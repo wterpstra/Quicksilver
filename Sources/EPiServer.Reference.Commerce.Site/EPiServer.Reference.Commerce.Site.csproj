@@ -145,11 +145,14 @@
     <Reference Include="EPiServer.Recommendations.Commerce, Version=11.2.3.0, Culture=neutral, PublicKeyToken=8fe83dea738b45b7, processorArchitecture=MSIL">
       <HintPath>..\..\packages\EPiServer.Recommendations.Commerce.11.2.3\lib\net452\EPiServer.Recommendations.Commerce.dll</HintPath>
     </Reference>
-    <Reference Include="EPiServer.ServiceApi, Version=4.0.0.0, Culture=neutral, PublicKeyToken=8fe83dea738b45b7, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\EPiServer.ServiceApi.4.0.0\lib\net452\EPiServer.ServiceApi.dll</HintPath>
+    <Reference Include="EPiServer.ServiceApi, Version=4.1.0.0, Culture=neutral, PublicKeyToken=8fe83dea738b45b7, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\EPiServer.ServiceApi.4.1.0\lib\net452\EPiServer.ServiceApi.dll</HintPath>
     </Reference>
-    <Reference Include="EPiServer.ServiceApi.Commerce, Version=4.0.0.0, Culture=neutral, PublicKeyToken=8fe83dea738b45b7, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\EPiServer.ServiceApi.Commerce.4.0.0\lib\net452\EPiServer.ServiceApi.Commerce.dll</HintPath>
+    <Reference Include="EPiServer.ServiceApi.Commerce, Version=4.1.0.0, Culture=neutral, PublicKeyToken=8fe83dea738b45b7, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\EPiServer.ServiceApi.Commerce.4.1.0\lib\net452\EPiServer.ServiceApi.Commerce.dll</HintPath>
+    </Reference>
+    <Reference Include="EPiServer.ServiceApi.Commerce.WebHooks, Version=4.1.0.0, Culture=neutral, PublicKeyToken=8fe83dea738b45b7, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\EPiServer.ServiceApi.Commerce.WebHooks.4.1.0\lib\net452\EPiServer.ServiceApi.Commerce.WebHooks.dll</HintPath>
     </Reference>
     <Reference Include="EPiServer.Shell, Version=10.11.0.0, Culture=neutral, PublicKeyToken=8fe83dea738b45b7, processorArchitecture=MSIL">
       <HintPath>..\..\packages\EPiServer.CMS.UI.Core.10.11.0\lib\net45\EPiServer.Shell.dll</HintPath>
@@ -165,12 +168,6 @@
     </Reference>
     <Reference Include="EPiServer.XForms, Version=10.10.4.0, Culture=neutral, PublicKeyToken=8fe83dea738b45b7, processorArchitecture=MSIL">
       <HintPath>..\..\packages\EPiServer.CMS.Core.10.10.4\lib\net45\EPiServer.XForms.dll</HintPath>
-    </Reference>
-    <Reference Include="Geta.ServiceApi.Commerce, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Geta.ServiceApi.Commerce.1.2.0\lib\net452\Geta.ServiceApi.Commerce.dll</HintPath>
-    </Reference>
-    <Reference Include="Geta.ServiceApi.Commerce.WebHooks, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Geta.ServiceApi.Commerce.WebHooks.1.2.0\lib\net452\Geta.ServiceApi.Commerce.WebHooks.dll</HintPath>
     </Reference>
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
       <HintPath>..\..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
@@ -252,6 +249,9 @@
     </Reference>
     <Reference Include="Microsoft.AspNet.WebHooks.Custom, Version=1.2.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.AspNet.WebHooks.Custom.1.2.1\lib\net45\Microsoft.AspNet.WebHooks.Custom.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.WebHooks.Custom.Api, Version=1.2.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AspNet.WebHooks.Custom.Api.1.2.1\lib\net45\Microsoft.AspNet.WebHooks.Custom.Api.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Azure.KeyVault.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.Azure.KeyVault.Core.1.0.0\lib\net40\Microsoft.Azure.KeyVault.Core.dll</HintPath>
@@ -496,6 +496,7 @@
     <Compile Include="Features\Product\ViewModelFactories\CatalogEntryViewModelFactory.cs" />
     <Compile Include="Features\Product\ViewModels\FashionBundleViewModel.cs" />
     <Compile Include="Features\Product\ViewModels\FashionPackageViewModel.cs" />
+    <Compile Include="Features\PromotionApi\Controllers\PromotionApiController.cs" />
     <Compile Include="Features\Recommendations\ViewModels\ProductViewModelBase.cs" />
     <Compile Include="Features\Recommendations\ViewModels\RecommendedProductTileViewModel.cs" />
     <Compile Include="Features\Profile\ViewModels\ProfilePageViewModel.cs" />
@@ -675,8 +676,10 @@
     <Compile Include="Infrastructure\StructureMapDependencyResolver.cs" />
     <Compile Include="Infrastructure\ModelBinderProvider.cs" />
     <Compile Include="Infrastructure\ViewTemplateModelRegistrator.cs" />
+    <Compile Include="Infrastructure\WebApi\AuthorizationHeaderOperationFilter.cs" />
     <Compile Include="Infrastructure\WebApi\StructureMapResolver.cs" />
     <Compile Include="Infrastructure\WebApi\StructureMapDependencyScope.cs" />
+    <Compile Include="Infrastructure\Webhooks\QuicksilverWebhookManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Content Include="Views\Search\_QuickSearch.cshtml" />
     <Content Include="Views\OrderConfirmationMailPage\Index.cshtml" />

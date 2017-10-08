@@ -2,6 +2,7 @@ using System.Web.Http;
 using WebActivatorEx;
 using EPiServer.Reference.Commerce.Site;
 using Swashbuckle.Application;
+using EPiServer.Reference.Commerce.Site.Infrastructure.WebApi;
 
 [assembly: PreApplicationStartMethod(typeof(SwaggerConfig), "Register")]
 
@@ -32,7 +33,7 @@ namespace EPiServer.Reference.Commerce.Site
                         // hold additional metadata for an API. Version and title are required but you can also provide
                         // additional fields by chaining methods off SingleApiVersion.
                         //
-                        c.SingleApiVersion("v1", "EPiServer.Reference.Commerce.Site");
+                        c.SingleApiVersion("v2", "EPiServer.Reference.Commerce.Site");
 
                         // If you want the output Swagger docs to be indented properly, enable the "PrettyPrint" option.
                         //
@@ -64,7 +65,7 @@ namespace EPiServer.Reference.Commerce.Site
                         // NOTE: You must also configure 'EnableApiKeySupport' below in the SwaggerUI section
                         //c.ApiKey("apiKey")
                         //    .Description("API Key Authentication")
-                        //    .Name("apiKey")
+                        //    .Name("Authorization")
                         //    .In("header");
                         //
                         //c.OAuth2("oauth2")
@@ -177,6 +178,7 @@ namespace EPiServer.Reference.Commerce.Site
                         // alternative implementation for ISwaggerProvider with the CustomProvider option.
                         //
                         //c.CustomProvider((defaultProvider) => new CachingSwaggerProvider(defaultProvider));
+                        c.OperationFilter<AuthorizationHeaderOperationFilter>();
                     })
                 .EnableSwaggerUi(c =>
                     {
@@ -249,13 +251,8 @@ namespace EPiServer.Reference.Commerce.Site
                         // If your API supports ApiKey, you can override the default values.
                         // "apiKeyIn" can either be "query" or "header"
                         //
-                        //c.EnableApiKeySupport("apiKey", "header");
+                        //c.EnableApiKeySupport("Authorization", "header");
                     });
-        }
-
-        private static string GetServiceApiXmlCommentsPath()
-        {
-            return $@"{System.AppDomain.CurrentDomain.BaseDirectory}\bin\Geta.ServiceApi.Commerce.xml";
         }
     }
 }

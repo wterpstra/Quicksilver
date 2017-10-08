@@ -1,21 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Web.Http;
 using System.Web.Http.Description;
 using EPiServer.Commerce.Marketing;
-using EPiServer.ServiceApi.Configuration;
-using EPiServer.ServiceApi.Util;
-using System.Collections.Generic;
-using EPiServer;
 using EPiServer.Commerce.Marketing.Promotions;
 using EPiServer.Core;
 using EPiServer.DataAccess;
 using EPiServer.Security;
+using EPiServer.ServiceApi.Configuration;
+using EPiServer.ServiceApi.Util;
 using Mediachase.Commerce;
-using Mediachase.Commerce.Catalog;
-using Mediachase.Commerce.Markets;
-using Mediachase.Commerce.Orders.Managers;
 
-namespace Geta.ServiceApi.Commerce.Controllers
+namespace EPiServer.Reference.Commerce.Site.Features.PromotionApi.Controllers
 {
     /// <summary>
     /// Promotion API controller.
@@ -23,13 +19,14 @@ namespace Geta.ServiceApi.Commerce.Controllers
     [AuthorizePermission("EPiServerServiceApi", "WriteAccess"), RequireHttps, RoutePrefix("episerverapi/commerce/promotion")]
     public class PromotionApiController : ApiController
     {
-        private static readonly ApiCallLogger Logger = new ApiCallLogger(typeof(OrderApiController));
+        private static readonly ApiCallLogger Logger = new ApiCallLogger(typeof(PromotionApiController));
         private readonly IContentRepository _contentRepository;
         private readonly IPromotionEngine _promotionEngine;
 
         /// <summary>
         /// Initializes a new instance of the PromotionApiController.
         /// </summary>
+        /// <param name="contentRepository"></param>
         /// <param name="promotionEngine"></param>
         public PromotionApiController(IContentRepository contentRepository,  IPromotionEngine promotionEngine)
         {
