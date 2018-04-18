@@ -11,6 +11,7 @@
     Search.init();
     Navigation.init();
     Recommendations.init();
+    SignalR.init();
 
     $("[data-hide]").on("click", function () {
         $(this).closest("." + $(this).attr("data-hide")).hide();

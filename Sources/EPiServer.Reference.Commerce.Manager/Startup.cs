@@ -8,6 +8,7 @@ using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin;
 using Microsoft.Owin.Security.Cookies;
 using Owin;
+using PixieEpiServerExtensionCoViewing.ApplicationBuilderExtensions;
 using System;
 
 [assembly: OwinStartup(typeof(Startup))]
@@ -29,6 +30,7 @@ namespace EPiServer.Reference.Commerce.Manager
 
         public void Configuration(IAppBuilder app)
         {
+            app.SignalRStartUp();
             app.AddCmsAspNetIdentity<SiteUser>(new ApplicationOptions
             {
                 ConnectionStringName = _connectionStringHandler.Commerce.Name

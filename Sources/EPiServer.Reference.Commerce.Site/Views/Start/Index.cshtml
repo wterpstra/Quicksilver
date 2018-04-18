@@ -10,6 +10,17 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col-xs-12">
+            @using (Html.BeginForm("Index", null, new { node = Model.StartPage.ContentLink }, FormMethod.Post))
+            {
+                <div class="form-group">
+                    <input type="text" placeholder="Invite your friend's by providing us his/her email address to share your experience" class="form-control form-inline" id="email" name="email" />
+                    <input type="submit" value="Invite" />
+                </div>
+            }
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
             @if (promotions.Any())
             {
                 <div id="promotion-carousel" class="carousel slide" data-ride="carousel">
@@ -17,7 +28,7 @@
                         @for (var i = 0; i < promotions.Count(); i++)
                         {
                             <div class="item" data-slide-number="@i">
-                                <img src="@Url.ContentUrl(promotions.ElementAt(i).BannerImage)" />
+                                <img src="@Url.ContentUrl(promotions.ElementAt(i).BannerImage)"/>
                             </div>
                         }
                     </div>

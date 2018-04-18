@@ -11,7 +11,10 @@ using Mediachase.Commerce;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
+using EPiServer.Reference.Commerce.Shared.Services;
 using EPiServer.Reference.Commerce.Site.Features.Recommendations.Extensions;
+using EPiServer.ServiceLocation;
+using PixieEpiServerExtensionCoViewing.Hub;
 
 namespace EPiServer.Reference.Commerce.Site.Features.Start.Controllers
 {
@@ -32,7 +35,8 @@ namespace EPiServer.Reference.Commerce.Site.Features.Start.Controllers
         }
 
         [Tracking(TrackingType.Home)]
-        public ViewResult Index(StartPage currentPage)
+        [AcceptVerbs(HttpVerbs.Get | HttpVerbs.Post)]
+        public ViewResult Index(StartPage currentPage, string email = "")
         {
             var viewModel = new StartPageViewModel()
             {
@@ -40,8 +44,20 @@ namespace EPiServer.Reference.Commerce.Site.Features.Start.Controllers
                 Promotions = GetActivePromotions(),
                 Recommendations = this.GetHomeRecommendations()
             };
-            
+
+            if (!string.IsNullOrEmpty(email))
+                InviteFreinds(email);
+
             return View(viewModel);
+        }
+
+        private void InviteFreinds(string email)
+        {
+            var mailService = ServiceLocator.Current.GetInstance<IMailService>();
+            var signalRManager = ServiceLocator.Current.GetInstance<IPixieCoViewingManager>();
+            var link = signalRManager.StartPresenterSession();
+            mailService.Send("Join me", link, email);
+
         }
 
         protected virtual ContentReference GetCampaignRoot()

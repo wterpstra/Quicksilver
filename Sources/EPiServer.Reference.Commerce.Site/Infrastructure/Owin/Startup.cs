@@ -13,6 +13,7 @@ using Microsoft.Owin.Security.Google;
 using Microsoft.Owin.Security.MicrosoftAccount;
 using Microsoft.Owin.Security.Twitter;
 using Owin;
+using PixieEpiServerExtensionCoViewing.ApplicationBuilderExtensions;
 using System;
 
 [assembly: OwinStartup(typeof(EPiServer.Reference.Commerce.Site.Infrastructure.Owin.Startup))]
@@ -37,6 +38,7 @@ namespace EPiServer.Reference.Commerce.Site.Infrastructure.Owin
 
         public void Configuration(IAppBuilder app)
         {
+            app.SignalRStartUp();
             app.AddCmsAspNetIdentity<SiteUser>(new ApplicationOptions
             {
                 ConnectionStringName = _connectionStringHandler.Commerce.Name
