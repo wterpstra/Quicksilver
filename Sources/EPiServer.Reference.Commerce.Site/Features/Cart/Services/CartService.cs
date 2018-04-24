@@ -93,15 +93,9 @@ namespace EPiServer.Reference.Commerce.Site.Features.Cart.Services
             }
         }
 
-        public string DefaultCartName
-        {
-            get { return "Default"; }
-        }
+        public string DefaultCartName => "Default";
 
-        public string DefaultWishListName
-        {
-            get { return "WishList"; }
-        }
+        public string DefaultWishListName => "WishList";
 
         public void RecreateLineItemsBasedOnShipments(ICart cart, IEnumerable<CartItemViewModel> cartItems, IEnumerable<AddressModel> addresses)
         {
@@ -172,6 +166,14 @@ namespace EPiServer.Reference.Commerce.Site.Features.Cart.Services
             ValidateCart(cart);
         }
 
+        public void UpdateShippingMethod(ICart cart, int shipmentId, Guid shippingMethodId)
+        {
+            var shipment = cart.GetFirstForm().Shipments.First(x => x.ShipmentId == shipmentId);
+            shipment.ShippingMethodId = shippingMethodId;
+
+            ValidateCart(cart);
+        }
+
         public AddToCartResult AddToCart(ICart cart, string code, decimal quantity)
         {
             var result = new AddToCartResult();
@@ -233,7 +235,7 @@ namespace EPiServer.Reference.Commerce.Site.Features.Cart.Services
                 // If there is an item which has no price in the new currency, a NullReference exception will be thrown.
                 // Mixing currencies in cart is not allowed.
                 // It's up to site's managers to ensure that all items have prices in allowed currency.
-                lineItem.PlacedPrice = _pricingService.GetPrice(lineItem.Code, cart.Market.MarketId, currency).UnitPrice.Amount;
+                lineItem.PlacedPrice = _pricingService.GetPrice(lineItem.Code, cart.MarketId, currency).UnitPrice.Amount;
             }
 
             ValidateCart(cart);
@@ -251,10 +253,11 @@ namespace EPiServer.Reference.Commerce.Site.Features.Cart.Services
             cart.UpdatePlacedPriceOrRemoveLineItems(_customerContext.GetContactById(cart.CustomerId), (item, issue) => validationIssues.AddValidationIssues(item, issue), _placedPriceProcessor);
             cart.UpdateInventoryOrRemoveLineItems((item, issue) => validationIssues.AddValidationIssues(item, issue), _inventoryProcessor);
 
-            cart.ApplyDiscounts(_promotionEngine, new PromotionEngineSettings());
+            ApplyDiscounts(cart);
 
             // Try to validate gift items inventory and don't catch validation issues.
-            cart.UpdateInventoryOrRemoveLineItems((item, issue) => {
+            cart.UpdateInventoryOrRemoveLineItems((item, issue) =>
+            {
                 if (!item.IsGift)
                 {
                     validationIssues.AddValidationIssues(item, issue);
@@ -312,7 +315,7 @@ namespace EPiServer.Reference.Commerce.Site.Features.Cart.Services
                 return false;
             }
             couponCodes.Add(couponCode);
-            var rewardDescriptions = cart.ApplyDiscounts(_promotionEngine, new PromotionEngineSettings());
+            var rewardDescriptions = ApplyDiscounts(cart);
             var appliedCoupons = rewardDescriptions
                 .Where(r => r.AppliedCoupon != null)
                 .Select(r => r.AppliedCoupon);
@@ -328,7 +331,12 @@ namespace EPiServer.Reference.Commerce.Site.Features.Cart.Services
         public void RemoveCouponCode(ICart cart, string couponCode)
         {
             cart.GetFirstForm().CouponCodes.Remove(couponCode);
-            cart.ApplyDiscounts(_promotionEngine, new PromotionEngineSettings());
+            ApplyDiscounts(cart);
+        }
+
+        public IEnumerable<RewardDescription> ApplyDiscounts(ICart cart)
+        {
+            return cart.ApplyDiscounts(_promotionEngine, new PromotionEngineSettings());
         }
 
         private void RemoveLineItem(ICart cart, int shipmentId, string code)
@@ -355,7 +363,7 @@ namespace EPiServer.Reference.Commerce.Site.Features.Cart.Services
             foreach (var validationIssue in validationIssues)
             {
                 var warning = new StringBuilder();
-                warning.Append(string.Format("Line Item with code {0} ", lineItem.Code));
+                warning.Append($"Line Item with code {lineItem.Code} ");
                 validationIssue.Value.Aggregate(warning, (current, issue) => current.Append(issue).Append(", "));
 
                 result.ValidationMessages.Add(warning.ToString().TrimEnd(',', ' '));

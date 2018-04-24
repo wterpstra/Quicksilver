@@ -5,9 +5,10 @@
             .on('keypress', '.jsChangeCartItem', Cart.preventSubmit)
             .on('click', '.jsRemoveCartItem', Cart.removeCartItem)
             .on('change', '.jsChangeCartItem', Cart.changeCartItem)
+            .on('change', '.jsChangeShipment', Cart.changeShipment)
             .on('click', '.jsAddToCart', Cart.addCartItem)
-            .on('change', '#MiniCart', function () { $("#MiniCartResponsive").html($(this).html()); })
-            .on('change', '#WishListMiniCart', function () { $("#WishListMiniCartResponsive").html($(this).html()); })
+            .on('change', '#MiniCart', function () { $("#MiniCartResponsive > div:first").html($("div:first", this).html()); })
+            .on('change', '#WishListMiniCart', function () { $("#WishListMiniCartResponsive > div:first").html($("div:first", this).html()); })
             .on('click', '.jsCartContinueShopping', function () {
                 if ($(this).closest('#cart-dropdown')) {
                     $(this).closest('#cart-dropdown').collapse('hide');
@@ -28,6 +29,18 @@
             }
         });
 
+    },
+    changeShipment: function () {
+        var container = $(this).closest('.shipping-method');
+        var url = container.data('url');
+        $.ajax({
+            type: "POST",
+            url: url,
+            cache: false,
+            success: function (result) {
+                Checkout.updateOrderSummary();
+            }
+        });
     },
     changeCartItem: function (e) {
 

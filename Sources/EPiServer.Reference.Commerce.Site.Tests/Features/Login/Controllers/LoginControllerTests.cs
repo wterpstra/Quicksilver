@@ -101,7 +101,7 @@ namespace EPiServer.Reference.Commerce.Site.Tests.Features.Login.Controllers
                 JsonRequestBehavior = JsonRequestBehavior.DenyGet
             };
 
-            result.ShouldBeEquivalentTo(expectedResult);
+            result.Should().BeEquivalentTo(expectedResult);
         }
 
         [Fact]
@@ -156,7 +156,7 @@ namespace EPiServer.Reference.Commerce.Site.Tests.Features.Login.Controllers
 
             var result = _subject.OnRegisterException(_exceptionContext);
 
-            Assert.IsType(typeof(RegisterAccountViewModel), ((ViewResult)result).Model);
+            Assert.IsType<RegisterAccountViewModel>(((ViewResult)result).Model);
         }
 
         [Fact]
@@ -186,7 +186,7 @@ namespace EPiServer.Reference.Commerce.Site.Tests.Features.Login.Controllers
                 JsonRequestBehavior = JsonRequestBehavior.DenyGet
             };
 
-            result.ShouldBeEquivalentTo(expectedResult);
+            result.Should().BeEquivalentTo(expectedResult);
         }
 
         [Fact]
@@ -246,7 +246,7 @@ namespace EPiServer.Reference.Commerce.Site.Tests.Features.Login.Controllers
 
             var expectedResult = new ChallengeResult("mark", null);
 
-            result.ShouldBeEquivalentTo(expectedResult);
+            result.Should().BeEquivalentTo(expectedResult);
         }
 
         [Fact]
@@ -309,7 +309,7 @@ namespace EPiServer.Reference.Commerce.Site.Tests.Features.Login.Controllers
             {
                 ReturnUrl = "http://test.com/redirect"
             };
-            result.ShouldBeEquivalentTo(expectedResult);
+            result.Should().BeEquivalentTo(expectedResult);
         }
 
         private readonly LoginControllerForTest _subject;
@@ -342,7 +342,7 @@ namespace EPiServer.Reference.Commerce.Site.Tests.Features.Login.Controllers
             var authenticationManager = new Mock<IAuthenticationManager>();
             _orderGroupFactoryMock = new Mock<IOrderGroupFactory>();
 
-            var customercontextFacadeMock = new Mock<CustomerContextFacade>();
+            var customercontextFacadeMock = new Mock<CustomerContextFacade>(null);
             var countryManagerFacadeMock = new Mock<CountryManagerFacade>();
             countryManagerFacadeMock.Setup(x => x.GetCountries()).Returns(() => new CountryDto());
             var addressBookService = new AddressBookService(customercontextFacadeMock.Object, countryManagerFacadeMock.Object, _orderGroupFactoryMock.Object);

@@ -7,6 +7,8 @@ using EPiServer.Reference.Commerce.Site.Features.Checkout.Services;
 using EPiServer.Reference.Commerce.Site.Features.Recommendations.Services;
 using EPiServer.Reference.Commerce.Site.Infrastructure.Facades;
 using EPiServer.Web.Mvc.Html;
+using Mediachase.Commerce.Markets;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 
 namespace EPiServer.Reference.Commerce.Site.Features.Checkout.Controllers
@@ -18,33 +20,34 @@ namespace EPiServer.Reference.Commerce.Site.Features.Checkout.Controllers
         public OrderConfirmationController(
             ConfirmationService confirmationService,
             AddressBookService addressBookService,
-            IRecommendationService recommendationService,
             CustomerContextFacade customerContextFacade,
-            IOrderGroupTotalsCalculator orderGroupTotalsCalculator)
-            : base(confirmationService, addressBookService, customerContextFacade, orderGroupTotalsCalculator)
+            IOrderGroupCalculator orderGroupCalculator,
+            IMarketService marketService,
+            IRecommendationService recommendationService)
+            : base(confirmationService, addressBookService, customerContextFacade, orderGroupCalculator, marketService)
         {
             _recommendationService = recommendationService;
         }
 
         [HttpGet]
-        public ActionResult Index(OrderConfirmationPage currentPage, string notificationMessage, int? orderNumber)
+        public async Task<ActionResult> Index(OrderConfirmationPage currentPage, string notificationMessage, int? orderNumber)
         {
             IPurchaseOrder order = null;
             if (PageEditing.PageIsInEditMode)
             {
-                order = _confirmationService.CreateFakePurchaseOrder();
+                order = ConfirmationService.CreateFakePurchaseOrder();
             }
             else if (orderNumber.HasValue)
             {
-                order = _confirmationService.GetOrder(orderNumber.Value);
+                order = ConfirmationService.GetOrder(orderNumber.Value);
 
                 if (order != null)
                 {
-                    _recommendationService.SendOrderTracking(HttpContext, order);
+                    await _recommendationService.TrackOrderAsync(HttpContext, order);
                 }
             }
 
-            if (order != null && order.CustomerId == _customerContext.CurrentContactId)
+            if (order != null && order.CustomerId == CustomerContext.CurrentContactId)
             {
                 var viewModel = CreateViewModel(currentPage, order);
                 viewModel.NotificationMessage = notificationMessage;

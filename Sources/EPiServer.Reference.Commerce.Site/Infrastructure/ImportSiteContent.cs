@@ -8,6 +8,7 @@ using EPiServer.DataAbstraction.RuntimeModel;
 using EPiServer.DataAccess;
 using EPiServer.Enterprise;
 using EPiServer.Logging;
+using EPiServer.Reference.Commerce.Site.Features.Payment.Services;
 using EPiServer.Security;
 using EPiServer.ServiceLocation;
 using EPiServer.Web;
@@ -36,6 +37,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Hosting;
+using AppContext = Mediachase.Commerce.Core.AppContext;
 
 namespace EPiServer.Reference.Commerce.Site.Infrastructure
 {
@@ -48,14 +50,12 @@ namespace EPiServer.Reference.Commerce.Site.Infrastructure
         private Injected<ReferenceConverter> _referenceConverter = default(Injected<ReferenceConverter>);
         private Injected<IDataImporter> DataImporter = default(Injected<IDataImporter>);
         private Injected<TaxImportExport> TaxImportExport = default(Injected<TaxImportExport>);
+        private Injected<IPaymentManagerFacade> PaymentManager = default(Injected<IPaymentManagerFacade>);
 
-        public int Order
-        {
-            get { return 1000; }
-        }
+        public int Order => 1000;
 
-        public string Name { get { return "Quicksilver content"; } }
-        public string Description { get { return "Import catalog, assets, payment methods, shipping methods, and promotions for Quicksilver"; } }
+        public string Name => "Quicksilver content";
+        public string Description => "Import catalog, assets, payment methods, shipping methods, and promotions for Quicksilver";
 
         public bool Execute(IProgressMessenger progressMessenger)
         {
@@ -108,7 +108,7 @@ namespace EPiServer.Reference.Commerce.Site.Infrastructure
             var warehouseRepository = ServiceLocator.Current.GetInstance<IWarehouseRepository>();
             var defaultWarehouse = warehouseRepository.Get("default");
 
-            if (defaultWarehouse != null && defaultWarehouse.WarehouseId.HasValue)
+            if (defaultWarehouse?.WarehouseId != null)
             {
                 warehouseRepository.Delete(defaultWarehouse.WarehouseId.Value);
             }
@@ -133,14 +133,19 @@ namespace EPiServer.Reference.Commerce.Site.Infrastructure
         {
             var marketService = ServiceLocator.Current.GetInstance<IMarketService>();
             var allMarkets = marketService.GetAllMarkets().Where(x => x.IsEnabled).ToList();
-            foreach (var language in allMarkets.SelectMany(x => x.Languages).Distinct())
+            var existingLanguages = allMarkets.SelectMany(x => x.Languages).Distinct();
+
+            foreach (var language in existingLanguages)
             {
-                var paymentMethodDto = PaymentManager.GetPaymentMethods(language.TwoLetterISOLanguageName);
-                foreach (var method in paymentMethodDto.PaymentMethod)
+                var dto = Mediachase.Commerce.Orders.Managers.PaymentManager.GetPaymentMethods(language.TwoLetterISOLanguageName);
+                var workingDto = (PaymentMethodDto)dto.Copy();
+
+                foreach (var existingMethod in workingDto.PaymentMethod)
                 {
-                    method.Delete();
+                    existingMethod.Delete();
                 }
-                PaymentManager.SavePayment(paymentMethodDto);
+
+                PaymentManager.Service.SavePaymentMethod(workingDto);
 
                 AddPaymentMethod(Guid.NewGuid(),
                     "Credit card",
@@ -148,7 +153,7 @@ namespace EPiServer.Reference.Commerce.Site.Infrastructure
                     "Credit card payment",
                     "Mediachase.Commerce.Orders.CreditCardPayment, Mediachase.Commerce",
                     "EPiServer.Reference.Commerce.Shared.GenericCreditCardPaymentGateway, EPiServer.Reference.Commerce.Shared",
-                    true, 1, allMarkets, language, paymentMethodDto);
+                    true, 1, allMarkets, language, workingDto);
 
                 AddPaymentMethod(Guid.NewGuid(),
                     "Cash on delivery",
@@ -156,7 +161,7 @@ namespace EPiServer.Reference.Commerce.Site.Infrastructure
                     "The payment is settled as part of the order delivery.",
                     "Mediachase.Commerce.Orders.OtherPayment, Mediachase.Commerce",
                     "Mediachase.Commerce.Plugins.Payment.GenericPaymentGateway, Mediachase.Commerce.Plugins.Payment",
-                    false, 2, allMarkets, language, paymentMethodDto);
+                    false, 2, allMarkets, language, workingDto);
 
                 AddPaymentMethod(Guid.NewGuid(),
                     "Authorize - Pay By Credit Card",
@@ -164,7 +169,7 @@ namespace EPiServer.Reference.Commerce.Site.Infrastructure
                     "Authorize - Pay By Credit Card.",
                     "Mediachase.Commerce.Orders.CreditCardPayment, Mediachase.Commerce",
                     "Mediachase.Commerce.Plugins.Payment.Authorize.AuthorizePaymentGateway, Mediachase.Commerce.Plugins.Payment",
-                    false, 3, allMarkets, language, paymentMethodDto);
+                    false, 3, allMarkets, language, workingDto);
             }
         }
 
@@ -211,15 +216,16 @@ namespace EPiServer.Reference.Commerce.Site.Infrastructure
             {
                 var languageId = language.TwoLetterISOLanguageName;
                 var dto = ShippingManager.GetShippingMethods(languageId);
-                DeleteShippingMethods(dto);
-                ShippingManager.SaveShipping(dto);
+                var workingDto = (ShippingMethodDto)dto.Copy();
+                DeleteShippingMethods(workingDto);
+                ShippingManager.SaveShipping(workingDto);
 
                 var marketsForCurrentLanguage = enabledMarkets.Where(x => x.Languages.Contains(language));
-                var shippingSet = CreateShippingMethodsForLanguageAndCurrencies(dto, marketsForCurrentLanguage, languageId);
-                ShippingManager.SaveShipping(dto);
+                var shippingSet = CreateShippingMethodsForLanguageAndCurrencies(workingDto, marketsForCurrentLanguage, languageId);
+                ShippingManager.SaveShipping(workingDto);
 
-                AssociateShippingMethodWithMarkets(dto, marketsForCurrentLanguage, shippingSet);
-                ShippingManager.SaveShipping(dto);
+                AssociateShippingMethodWithMarkets(workingDto, marketsForCurrentLanguage, shippingSet);
+                ShippingManager.SaveShipping(workingDto);
             }
         }
 
@@ -233,7 +239,7 @@ namespace EPiServer.Reference.Commerce.Site.Infrastructure
 
         private void ImportTaxes()
         {
-            TaxImportExport.Service.Import(Path.Combine(HostingEnvironment.ApplicationPhysicalPath, @"App_Data\Taxes.csv"), null, ',');
+            TaxImportExport.Service.Import(Path.Combine(HostingEnvironment.ApplicationPhysicalPath, @"App_Data\Taxes.csv"), ',');
         }
 
         private IEnumerable<ShippingMethodDto.ShippingMethodRow> CreateShippingMethodsForLanguageAndCurrencies(ShippingMethodDto dto, IEnumerable<IMarket> markets, string languageId)
@@ -248,9 +254,9 @@ namespace EPiServer.Reference.Commerce.Site.Infrastructure
 
             foreach (var currency in markets.SelectMany(m => m.Currencies).Distinct())
             {
-                shippingMethods.Add(CreateShippingMethod(dto, shippingOption, languageId, sortOrder++, "Express-" + currency, string.Format("Express {0} (1 day)({1})", currency, languageId), usdCostExpress, currency));
-                shippingMethods.Add(CreateShippingMethod(dto, shippingOption, languageId, sortOrder++, "Fast-" + currency, string.Format("Fast {0} (2-3 days)({1})", currency, languageId), usdCostFast, currency));
-                shippingMethods.Add(CreateShippingMethod(dto, shippingOption, languageId, sortOrder++, "Regular-" + currency, string.Format("Regular {0} (4-7 days)({1})", currency, languageId), usdCostRegular, currency));
+                shippingMethods.Add(CreateShippingMethod(dto, shippingOption, languageId, sortOrder++, "Express-" + currency, $"Express {currency} (1 day)({languageId})", usdCostExpress, currency));
+                shippingMethods.Add(CreateShippingMethod(dto, shippingOption, languageId, sortOrder++, "Fast-" + currency, $"Fast {currency} (2-3 days)({languageId})", usdCostFast, currency));
+                shippingMethods.Add(CreateShippingMethod(dto, shippingOption, languageId, sortOrder++, "Regular-" + currency, $"Regular {currency} (4-7 days)({languageId})", usdCostRegular, currency));
             }
 
             return shippingMethods;
@@ -339,7 +345,7 @@ namespace EPiServer.Reference.Commerce.Site.Infrastructure
                     var percent = (int)Math.Round(msg.GetOverallProgress() * 100);
                     var message = msg.Exception == null
                         ? msg.Message
-                        : string.Format("{0} {1}", msg.Message, msg.ExceptionMessage);
+                        : $"{msg.Message} {msg.ExceptionMessage}";
                     _progressMessenger.AddProgressMessageText(message, isError, percent);
                 };
                 importJob.Execute(addMessage, CancellationToken.None);
@@ -376,16 +382,10 @@ namespace EPiServer.Reference.Commerce.Site.Infrastructure
         private static void SyncMetaClassesToContentTypeModels()
         {
             var cachedRepository = ServiceLocator.Current.GetInstance<IContentTypeRepository>() as ICachedRepository;
-            if (cachedRepository != null)
-            {
-                cachedRepository.ClearCache();
-            }
+            cachedRepository?.ClearCache();
 
             cachedRepository = ServiceLocator.Current.GetInstance<IPropertyDefinitionRepository>() as ICachedRepository;
-            if (cachedRepository != null)
-            {
-                cachedRepository.ClearCache();
-            }
+            cachedRepository?.ClearCache();
 
             var tasks = new List<Task>();
 

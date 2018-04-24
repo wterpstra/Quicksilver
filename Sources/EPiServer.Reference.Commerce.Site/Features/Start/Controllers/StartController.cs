@@ -1,18 +1,17 @@
 ﻿using EPiServer.Commerce.Catalog.ContentTypes;
 using EPiServer.Commerce.Marketing;
 using EPiServer.Core;
-using EPiServer.Recommendations.Commerce.Tracking;
-using EPiServer.Recommendations.Tracking;
 using EPiServer.Reference.Commerce.Site.Features.Market.Services;
+using EPiServer.Reference.Commerce.Site.Features.Recommendations.Extensions;
 using EPiServer.Reference.Commerce.Site.Features.Start.Pages;
 using EPiServer.Reference.Commerce.Site.Features.Start.ViewModels;
+using EPiServer.Tracking.Commerce;
 using EPiServer.Web.Mvc;
 using Mediachase.Commerce;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
 using EPiServer.Reference.Commerce.Shared.Services;
-using EPiServer.Reference.Commerce.Site.Features.Recommendations.Extensions;
 using EPiServer.ServiceLocation;
 using PixieEpiServerExtensionCoViewing.Hub;
 
@@ -34,15 +33,15 @@ namespace EPiServer.Reference.Commerce.Site.Features.Start.Controllers
             _marketContentFilter = marketContentFilter;
         }
 
-        [Tracking(TrackingType.Home)]
+        [CommerceTracking(TrackingType.Home)]
         [AcceptVerbs(HttpVerbs.Get | HttpVerbs.Post)]
         public ViewResult Index(StartPage currentPage, string email = "")
         {
             var viewModel = new StartPageViewModel()
             {
                 StartPage = currentPage,
-                Promotions = GetActivePromotions(),
-                Recommendations = this.GetHomeRecommendations()
+                Recommendations = this.GetHomeRecommendations().Take(6),
+                Promotions = GetActivePromotions()
             };
 
             if (!string.IsNullOrEmpty(email))
@@ -92,13 +91,15 @@ namespace EPiServer.Reference.Commerce.Site.Features.Start.Controllers
 
             foreach (var conditionItemReference in itemsOnPromotion.Condition.Items)
             {
-                var conditionItem = _contentLoader.Get<CatalogContentBase>(conditionItemReference);
-                AddIfProduct(conditionItem, conditionProducts);
-
-                var nodeContent = conditionItem as NodeContentBase;
-                if (nodeContent != null)
+                CatalogContentBase conditionItem;
+                if (_contentLoader.TryGet(conditionItemReference, out conditionItem))
                 {
-                    AddItemsRecursive(nodeContent, itemsOnPromotion, conditionProducts);
+                    AddIfProduct(conditionItem, conditionProducts);
+                    var nodeContent = conditionItem as NodeContentBase;
+                    if (nodeContent != null)
+                    {
+                        AddItemsRecursive(nodeContent, itemsOnPromotion, conditionProducts);
+                    }
                 }
             }
 

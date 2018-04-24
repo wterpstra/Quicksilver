@@ -38,7 +38,7 @@ namespace EPiServer.Reference.Commerce.Site.Features.Login.Services
         {
             if (email == null)
             {
-                throw new ArgumentNullException("email");
+                throw new ArgumentNullException(nameof(email));
             }
 
             CustomerContact contact = null;
@@ -61,22 +61,18 @@ namespace EPiServer.Reference.Commerce.Site.Features.Login.Services
         {
             if (email == null)
             {
-                throw new ArgumentNullException("email");
+                throw new ArgumentNullException(nameof(email));
             }
 
             var contact = GetCustomerContact(email);
-            if(contact == null)
-            {
-                return null;
-            }
-            return contact.PrimaryKeyId;
+            return contact?.PrimaryKeyId;
         }
 
         public virtual SiteUser GetUser(string email)
         {
             if (email == null)
             {
-                throw new ArgumentNullException("email");
+                throw new ArgumentNullException(nameof(email));
             }
 
             SiteUser user = _userManager.FindByEmail(email);
@@ -88,7 +84,7 @@ namespace EPiServer.Reference.Commerce.Site.Features.Login.Services
         {
             if (email == null)
             {
-                throw new ArgumentNullException("email");
+                throw new ArgumentNullException(nameof(email));
             }
 
             return await _userManager.FindByNameAsync(email);
@@ -103,7 +99,7 @@ namespace EPiServer.Reference.Commerce.Site.Features.Login.Services
         {
             if (user == null)
             {
-                throw new ArgumentNullException("user");
+                throw new ArgumentNullException(nameof(user));
             }
 
             ContactIdentityResult contactResult = null;
@@ -140,31 +136,34 @@ namespace EPiServer.Reference.Commerce.Site.Features.Login.Services
             return contactResult;
         }
 
-        private CustomerContact CreateCustomerContact(SiteUser user)
+        public CustomerContact CreateCustomerContact(SiteUser user)
         {
             if (user == null)
             {
-                throw new ArgumentNullException("user");
+                throw new ArgumentNullException(nameof(user));
             }
 
-            CustomerContact contact = CustomerContact.CreateInstance();
+            CustomerContact contact = _customerContext.GetContactByUsername(user.UserName);
+            if (contact == null)
+            {
+                contact = CustomerContact.CreateInstance();
+                contact.PrimaryKeyId = new PrimaryKeyId(new Guid(user.Id));
+                contact.UserId = "String:" + user.Email; // The UserId needs to be set in the format "String:{email}". Else a duplicate CustomerContact will be created later on.
+            }
 
             // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=320771
             // Send an email with this link
             // string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
             // var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
             // await UserManager.SendEmailAsync(user.Id, "Confirm your account", "Please confirm your account by clicking <a href=\"" + callbackUrl + "\">here</a>");
-
             if (!String.IsNullOrEmpty(user.FirstName) || !String.IsNullOrEmpty(user.LastName))
             {
-                contact.FullName = String.Format("{0} {1}", user.FirstName, user.LastName);
+                contact.FullName = $"{user.FirstName} {user.LastName}";
             }
 
-            contact.PrimaryKeyId = new PrimaryKeyId(new Guid(user.Id));
             contact.FirstName = user.FirstName;
             contact.LastName = user.LastName;
             contact.Email = user.Email;
-            contact.UserId = "String:" + user.Email; // The UserId needs to be set in the format "String:{email}". Else a duplicate CustomerContact will be created later on.
             contact.RegistrationSource = user.RegistrationSource;
 
             if (user.Addresses != null)
@@ -224,15 +223,9 @@ namespace EPiServer.Reference.Commerce.Site.Features.Login.Services
 
         public void Dispose()
         {
-            if (_userManager != null)
-            {
-                _userManager.Dispose();
-            }
+            _userManager?.Dispose();
 
-            if (_signInManager != null)
-            {
-                _signInManager.Dispose();
-            }
+            _signInManager?.Dispose();
         }
     }
 }

@@ -1,7 +1,5 @@
 ﻿using EPiServer.Commerce.Order;
 using EPiServer.Core;
-using EPiServer.Recommendations.Commerce.Tracking;
-using EPiServer.Recommendations.Tracking;
 using EPiServer.Reference.Commerce.Site.Features.Cart.Services;
 using EPiServer.Reference.Commerce.Site.Features.Checkout.Pages;
 using EPiServer.Reference.Commerce.Site.Features.Checkout.Services;
@@ -15,6 +13,7 @@ using EPiServer.Web.Mvc;
 using EPiServer.Web.Mvc.Html;
 using EPiServer.Web.Routing;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 
 namespace EPiServer.Reference.Commerce.Site.Features.Checkout.Controllers
@@ -53,7 +52,7 @@ namespace EPiServer.Reference.Commerce.Site.Features.Checkout.Controllers
 
         [HttpGet]
         [OutputCache(Duration = 0, NoStore = true)]
-        public ActionResult Index(CheckoutPage currentPage)
+        public async Task<ActionResult> Index(CheckoutPage currentPage)
         {
             if (CartIsNullOrEmpty())
             {
@@ -65,12 +64,12 @@ namespace EPiServer.Reference.Commerce.Site.Features.Checkout.Controllers
             Cart.Currency = _currencyService.GetCurrentCurrency();
 
             _checkoutService.UpdateShippingAddresses(Cart, viewModel);
-
             _checkoutService.UpdateShippingMethods(Cart, viewModel.Shipments);
-            _checkoutService.ApplyDiscounts(Cart);
+
+            _cartService.ApplyDiscounts(Cart);
             _orderRepository.Save(Cart);
 
-            _recommendationService.SendCheckoutTrackingData(HttpContext);
+            await _recommendationService.TrackCheckoutAsync(HttpContext);
 
             _checkoutService.ProcessPaymentCancel(viewModel, TempData, ControllerContext);
 
@@ -87,21 +86,6 @@ namespace EPiServer.Reference.Commerce.Site.Features.Checkout.Controllers
             }
 
             return RedirectToAction("Index", new { node = currentPage.ContentLink });
-        }
-
-        [HttpPost]
-        [AllowDBWrite]
-        public ActionResult Update(CheckoutPage currentPage, UpdateShippingMethodViewModel shipmentViewModel, IPaymentOption paymentOption)
-        {
-            ModelState.Clear();
-
-            _checkoutService.UpdateShippingMethods(Cart, shipmentViewModel.Shipments);
-            _checkoutService.ApplyDiscounts(Cart);
-            _orderRepository.Save(Cart);
-
-            var viewModel = CreateCheckoutViewModel(currentPage, paymentOption);
-
-            return PartialView("Partial", viewModel);
         }
 
         [HttpPost]
@@ -152,26 +136,25 @@ namespace EPiServer.Reference.Commerce.Site.Features.Checkout.Controllers
         
         [HttpPost]
         [AllowDBWrite]
-        public ActionResult Purchase(CheckoutViewModel viewModel, IPaymentOption paymentOption)
+        public ActionResult Purchase(CheckoutViewModel viewModel, IPaymentMethod paymentMethod)
         {
             if (CartIsNullOrEmpty())
             {
                 return Redirect(Url.ContentUrl(ContentReference.StartPage));
             }
 
-            // Since the payment property is marked with an exclude binding attribute in the CheckoutViewModel
-            // it needs to be manually re-added again.
-            viewModel.Payment = paymentOption;
+            viewModel.Payment = paymentMethod;
 
             viewModel.IsAuthenticated = User.Identity.IsAuthenticated;
 
             _checkoutService.CheckoutAddressHandling.UpdateUserAddresses(viewModel);
+
             if (!_checkoutService.ValidateOrder(ModelState, viewModel, _cartService.ValidateCart(Cart)))
             {
                 return View(viewModel);
             }
             
-            if (!paymentOption.ValidateData())
+            if (!paymentMethod.ValidateData())
             {
                 return View(viewModel);
             }
@@ -220,9 +203,9 @@ namespace EPiServer.Reference.Commerce.Site.Features.Checkout.Controllers
             return View(checkoutViewModel.ViewName, CreateCheckoutViewModel(checkoutViewModel.CurrentPage, checkoutViewModel.Payment));
         }
 
-        private CheckoutViewModel CreateCheckoutViewModel(CheckoutPage currentPage, IPaymentOption paymentOption = null)
+        private CheckoutViewModel CreateCheckoutViewModel(CheckoutPage currentPage, IPaymentMethod paymentMethod = null)
         {
-            return _checkoutViewModelFactory.CreateCheckoutViewModel(Cart, currentPage, paymentOption);
+            return _checkoutViewModelFactory.CreateCheckoutViewModel(Cart, currentPage, paymentMethod);
         }
 
         private ICart Cart

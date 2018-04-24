@@ -9,7 +9,6 @@ using EPiServer.Reference.Commerce.Site.Features.Cart.Services;
 using EPiServer.Reference.Commerce.Site.Features.Cart.ViewModels;
 using EPiServer.Reference.Commerce.Site.Features.Checkout.Pages;
 using EPiServer.Reference.Commerce.Site.Features.Checkout.ViewModels;
-using EPiServer.Reference.Commerce.Site.Features.Shared.Extensions;
 using EPiServer.Reference.Commerce.Site.Features.Start.Pages;
 using EPiServer.Reference.Commerce.Site.Infrastructure.Facades;
 using Mediachase.Commerce.Orders;
@@ -80,7 +79,7 @@ namespace EPiServer.Reference.Commerce.Site.Features.Checkout.Services
                 shipment.ShippingMethodId = shipmentViewModels[index++].ShippingMethodId;
             }
         }
-        
+
         public virtual void UpdateShippingAddresses(ICart cart, CheckoutViewModel viewModel)
         {
             if (viewModel.UseBillingAddressForShipment)
@@ -95,11 +94,6 @@ namespace EPiServer.Reference.Commerce.Site.Features.Checkout.Services
                     shipments.ElementAt(index).ShippingAddress = _addressBookService.ConvertToAddress(viewModel.Shipments[index].Address, cart);
                 }
             }
-        }
-
-        public virtual void ApplyDiscounts(ICart cart)
-        {
-            cart.ApplyDiscounts(_promotionEngine, new PromotionEngineSettings());
         }
 
         public virtual void CreateAndAddPaymentToCart(ICart cart, CheckoutViewModel viewModel)
@@ -185,7 +179,7 @@ namespace EPiServer.Reference.Commerce.Site.Features.Checkout.Services
             };
 
             var startpage = _contentRepository.Get<StartPage>(ContentReference.StartPage);
-            var confirmationPage = _contentRepository.GetChildren<OrderConfirmationPage>(viewModel.CurrentPage.ContentLink).FirstOrDefault();
+            var confirmationPage = _contentRepository.GetChildren<OrderConfirmationPage>(viewModel.CurrentPage.ContentLink).First();
 
             try
             {
@@ -193,7 +187,7 @@ namespace EPiServer.Reference.Commerce.Site.Features.Checkout.Services
             }
             catch (Exception e)
             {
-                _log.Warning(string.Format("Unable to send purchase receipt to '{0}'.", viewModel.BillingAddress.Email), e);
+                _log.Warning($"Unable to send purchase receipt to '{viewModel.BillingAddress.Email}'.", e);
                 return false;
             }
             return true;
@@ -212,7 +206,7 @@ namespace EPiServer.Reference.Commerce.Site.Features.Checkout.Services
                 queryCollection.Add("notificationMessage", string.Format(_localizationService.GetString("/OrderConfirmationMail/ErrorMessages/SmtpFailure"), checkoutViewModel.BillingAddress.Email));
             }
 
-            var confirmationPage = _contentRepository.GetChildren<OrderConfirmationPage>(checkoutViewModel.CurrentPage.ContentLink).FirstOrDefault();
+            var confirmationPage = _contentRepository.GetChildren<OrderConfirmationPage>(checkoutViewModel.CurrentPage.ContentLink).First();
 
             return new UrlBuilder(confirmationPage.LinkURL) {QueryCollection = queryCollection}.ToString();
         }
@@ -229,18 +223,12 @@ namespace EPiServer.Reference.Commerce.Site.Features.Checkout.Services
                 validation = AnonymousPurchaseValidation;
             }
 
-            if (!validation.ValidateModel(modelState, viewModel) ||
-                !validation.ValidateOrderOperation(modelState, validationIssueCollections))
-            {
-                return false;
-            }
-
-            return true;
+            return validation.ValidateModel(modelState, viewModel) && validation.ValidateOrderOperation(modelState, validationIssueCollections);
         }
 
         public void ProcessPaymentCancel(CheckoutViewModel viewModel, TempDataDictionary tempData, ControllerContext controlerContext)
         {
-            var message = tempData["message"] != null ? tempData["message"].ToString() : controlerContext.HttpContext.Request.QueryString["message"];
+            var message = tempData["message"]?.ToString() ?? controlerContext.HttpContext.Request.QueryString["message"];
             if (!string.IsNullOrEmpty(message))
             {
                 viewModel.Message = message;

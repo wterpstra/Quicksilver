@@ -1,8 +1,10 @@
+using EPiServer.Commerce.Marketing;
 using EPiServer.Commerce.Order;
+using EPiServer.Reference.Commerce.Site.Features.Cart.ViewModels;
 using EPiServer.Reference.Commerce.Site.Features.Shared.Models;
 using Mediachase.Commerce;
+using System;
 using System.Collections.Generic;
-using EPiServer.Reference.Commerce.Site.Features.Cart.ViewModels;
 
 namespace EPiServer.Reference.Commerce.Site.Features.Cart.Services
 {
@@ -21,5 +23,7 @@ namespace EPiServer.Reference.Commerce.Site.Features.Cart.Services
         void RemoveCouponCode(ICart cart, string couponCode);
         void RecreateLineItemsBasedOnShipments(ICart cart, IEnumerable<CartItemViewModel> cartItems, IEnumerable<AddressModel> addresses);
         void MergeShipments(ICart cart);
+        void UpdateShippingMethod(ICart cart, int shipmentId, Guid shippingMethodId);
+        IEnumerable<RewardDescription> ApplyDiscounts(ICart cart);
     }
 }

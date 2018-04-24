@@ -26,6 +26,10 @@
           <Currency>Valutaslag</Currency>
         </Labels>
       </Market>
+      <PricesInformation>
+        <IncludeTax>Alla priser inklusive moms</IncludeTax>
+        <ExcludeTax>Alla priser exklusive moms</ExcludeTax>
+      </PricesInformation>
     </Header>
     <Facet>
       <Choices>Artiklar:</Choices>
@@ -135,6 +139,9 @@
       </Payment>
       <Billing>
         <Heading>Faktureringsadress</Heading>
+        <Errors>
+          <EmptyEmail>Faktureringsadress: E-post krävs</EmptyEmail>
+        </Errors>
       </Billing>
       <Shipment>
         <ShippingTo>Levereras till:</ShippingTo>
@@ -233,6 +240,10 @@
       <ShippingCost>Beräknade fraktkostnader</ShippingCost>
       <ShippingSubtotal>Frakt Delsumma</ShippingSubtotal>
       <ShippingDiscount>Frakt Rabatt</ShippingDiscount>
+      <ShipmentCost>Frakt Kostnad</ShipmentCost>
+      <ShippingItemsTotal>Varor Totalt</ShippingItemsTotal>
+      <ShippingMethod>Fraktsätt</ShippingMethod>
+      <ShippingAddress>Fraktaddress</ShippingAddress>
       <TaxTotal>Beräknad skatt </TaxTotal>
       <CartTotal>Total för kundvagnen</CartTotal>
       <BillingDetails>Faktureringsinformation</BillingDetails>
