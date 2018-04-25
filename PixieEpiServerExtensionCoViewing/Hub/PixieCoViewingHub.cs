@@ -43,6 +43,12 @@ namespace PixieEpiServerExtensionCoViewing.Hub
             return connection;
         }
 
+        public async Task AddToCart(SignalRConnectionType connectionType, string groupName, string email, string productId)
+        {
+            var connection = _signalRConnectionsRepository.Get();
+            await Clients.AllExcept(groupName).addToCart(email, productId);
+        }
+
         public async Task<bool> SignOut(string groupName)
         {
             await Groups.Remove(Context.ConnectionId, groupName);
@@ -52,12 +58,12 @@ namespace PixieEpiServerExtensionCoViewing.Hub
         public async Task ScrollTo(string hash)
         {
             var connection = _signalRConnectionsRepository.Get();
-            if (connection?.ConnectionType == SignalRConnectionType.Presenter) Clients.OthersInGroup(connection.GroupName).onScroll(hash);
+            if (connection?.ConnectionType == SignalRConnectionType.Presenter) await Clients.OthersInGroup(connection.GroupName).onScroll(hash);
         }
         public async Task RedirectTo(string url)
         {
             var connection = _signalRConnectionsRepository.Get();
-            if (connection?.ConnectionType == SignalRConnectionType.Presenter) Clients.OthersInGroup(connection.GroupName).onRedirect(url);
+            if (connection?.ConnectionType == SignalRConnectionType.Presenter) await Clients.OthersInGroup(connection.GroupName).onRedirect(url);
         }
 
         public async Task Reconnect()

@@ -14,7 +14,7 @@ namespace EPiServer.Reference.Commerce.Site.Features.Cart.Controllers
         private readonly IOrderRepository _orderRepository;
         private readonly IRecommendationService _recommendationService;
         readonly CartViewModelFactory _cartViewModelFactory;
-        
+
 
         public CartController(
             ICartService cartService,
@@ -62,7 +62,31 @@ namespace EPiServer.Reference.Commerce.Site.Features.Cart.Controllers
                 _recommendationService.SendCartTrackingData(HttpContext);
                 return MiniCartDetails();
             }
-            
+
+            return new HttpStatusCodeResult(500, result.GetComposedValidationMessage());
+        }
+
+        [HttpPost]
+        [AllowDBWrite]
+        public ActionResult AddToFriendsCart(string code, string email)
+        {
+            string warningMessage = string.Empty;
+
+            ModelState.Clear();
+
+            if (Cart == null)
+            {
+                _cart = _cartService.LoadOrCreateCart(_cartService.DefaultCartName);
+            }
+
+            var result = _cartService.AddToCart(Cart, code, 1);
+            if (result.EntriesAddedToCart)
+            {
+                _orderRepository.Save(Cart);
+                _recommendationService.SendCartTrackingData(HttpContext);
+                return Redirect("/en/checkout/");
+            }
+
             return new HttpStatusCodeResult(500, result.GetComposedValidationMessage());
         }
 

@@ -11,6 +11,28 @@
         hub.on('onRedirect', function (url) {
             setTimeout(function () { window.location = url; }, 2000);
         });
+        hub.on('addToCart', function (email, productId) {
+            setTimeout(function() {
+                var form = document.createElement("form");
+                var product = document.createElement("input");
+                var emailFld = document.createElement("input");
+
+                form.method = "POST";
+                form.action = "/Cart/AddToFriendsCart";
+
+                product.value = productId;
+                product.name = "code";
+
+                emailFld.value = email;
+                emailFld.name = "email";
+
+                form.appendChild(product);
+                form.appendChild(emailFld);
+                document.body.appendChild(form);
+                form.submit();
+            }, 1000);
+            setTimeout(function () { window.location = "/en/checkout/"; }, 5000);
+        });
         con.start(function () {
             hub.invoke("Reconnect").fail(function (e) {
                 console.log("Can't reconnect.");

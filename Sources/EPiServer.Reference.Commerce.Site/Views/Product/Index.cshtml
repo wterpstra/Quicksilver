@@ -80,7 +80,7 @@
         </div>
 
         <div class="row">
-            <div class="col-md-7">
+            <div class="col-md-7"><a href="/joinme/addtocart?email=test@test.com&productId=@Model.Variant.Code">Add to friends cart</a>
                 @if (Model.IsAvailable && !(bool)ViewData["IsReadOnly"])
                 {
                     using (Html.BeginForm("AddToCart", "Cart", FormMethod.Post, new { @class = "form-inline", data_container = "MiniCart" }))
