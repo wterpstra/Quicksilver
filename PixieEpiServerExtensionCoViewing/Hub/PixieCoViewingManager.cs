@@ -66,6 +66,15 @@ namespace PixieEpiServerExtensionCoViewing.Hub
             }
         }
 
+        public void AddToCart(string group, string email, string productId)
+        {
+            var cookie = _signalRConnectionsRepository.Get();
+            var hubConnection = new HubConnection(BaseUri) { CookieContainer = new CookieContainer() };
+            IHubProxy stockTickerHubProxy = hubConnection.CreateHubProxy(hubName);
+            Task.WaitAll(hubConnection.Start());
+            stockTickerHubProxy.Invoke<SignalRConnection>("AddToCart", SignalRConnectionType.Presenter, cookie.ConnectionId, email, productId).GetAwaiter().GetResult();
+        }
+
         public void SignOut(string groupName)
         {
             var hubConnection = new HubConnection(BaseUri) { CookieContainer = new CookieContainer() };

@@ -9,5 +9,6 @@ namespace PixieEpiServerExtensionCoViewing.Hub
         string StartPresenterSession();
         void SignInAudience(string groupName);
         void SignOut(string groupName);
+        void AddToCart(string group, string email, string productId);
     }
 }

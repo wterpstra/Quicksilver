@@ -38,5 +38,14 @@ namespace PixieEpiServerExtensionCoViewing.Controller
             _coViewingManager.SignOut(group);
             return Redirect(returnurl);
         }
+
+        [Route("addtocart")]
+        [AcceptVerbs("GET")]
+        public IHttpActionResult AddToCart(string email, string productId)
+        {
+
+            _coViewingManager.AddToCart(string.Empty, email, productId);
+            return Ok();
+        }
     }
 }
