@@ -17,6 +17,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using EPiServer.Reference.Commerce.Site.Features.Cart.Hubs;
+using Microsoft.AspNet.SignalR;
 
 namespace EPiServer.Reference.Commerce.Site.Features.Cart.Services
 {
@@ -174,7 +176,7 @@ namespace EPiServer.Reference.Commerce.Site.Features.Cart.Services
             ValidateCart(cart);
         }
 
-        public AddToCartResult AddToCart(ICart cart, string code, decimal quantity)
+        public AddToCartResult AddToCart(ICart cart, string code, decimal quantity, string addedBy)
         {
             var result = new AddToCartResult();
             var contentLink = _referenceConverter.GetContentLink(code);
@@ -185,7 +187,7 @@ namespace EPiServer.Reference.Commerce.Site.Features.Cart.Services
                 foreach (var relation in _relationRepository.GetChildren<BundleEntry>(contentLink))
                 {
                     var entry = _contentLoader.Get<EntryContentBase>(relation.Child);
-                    var recursiveResult = AddToCart(cart, entry.Code, relation.Quantity ?? 1);
+                    var recursiveResult = AddToCart(cart, entry.Code, relation.Quantity ?? 1, addedBy);
                     if (recursiveResult.EntriesAddedToCart)
                     {
                         result.EntriesAddedToCart = true;
@@ -207,6 +209,7 @@ namespace EPiServer.Reference.Commerce.Site.Features.Cart.Services
                 lineItem = cart.CreateLineItem(code, _orderGroupFactory);
                 lineItem.DisplayName = entryContent.DisplayName;
                 lineItem.Quantity = quantity;
+                lineItem.Properties.Add("AddedBy", addedBy);
                 cart.AddLineItem(lineItem, _orderGroupFactory);
             }
             else
@@ -296,9 +299,39 @@ namespace EPiServer.Reference.Commerce.Site.Features.Cart.Services
             return cart;
         }
 
+        public ICart LoadCart(string name, Guid customerId)
+        {
+            var cart = _orderRepository.LoadCart<ICart>(customerId, name, _currentMarket);
+
+            if (cart != null)
+            {
+                SetCartCurrency(cart, _currencyService.GetCurrentCurrency());
+
+                var validationIssues = ValidateCart(cart);
+                // After validate, if there is any change in cart, saving cart.
+                if (validationIssues.Any())
+                {
+                    _orderRepository.Save(cart);
+                }
+            }
+
+            return cart;
+        }
+
         public ICart LoadOrCreateCart(string name)
         {
             var cart = _orderRepository.LoadOrCreateCart<ICart>(_customerContext.CurrentContactId, name, _currentMarket);
+            if (cart != null)
+            {
+                SetCartCurrency(cart, _currencyService.GetCurrentCurrency());
+            }
+
+            return cart;
+        }
+
+        public ICart LoadOrCreateCart(string name, Guid customerId)
+        {
+            var cart = _orderRepository.LoadOrCreateCart<ICart>(customerId, name, _currentMarket);
             if (cart != null)
             {
                 SetCartCurrency(cart, _currencyService.GetCurrentCurrency());

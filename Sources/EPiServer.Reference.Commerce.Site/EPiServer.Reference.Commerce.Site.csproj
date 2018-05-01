@@ -386,9 +386,14 @@
     </Compile>
     <Compile Include="Features\AddressBook\ViewModels\AddressCollectionViewModel.cs" />
     <Compile Include="Features\AddressBook\ViewModels\AddressViewModel.cs" />
+    <Compile Include="Features\Cart\Controllers\InviteToCartPageController.cs" />
+    <Compile Include="Features\Cart\Hubs\CoShoppingHub.cs" />
+    <Compile Include="Features\Cart\Models\GuestCartAccessModel.cs" />
+    <Compile Include="Features\Cart\Pages\InviteToCartPage.cs" />
     <Compile Include="Features\Cart\Services\AddToCartResult.cs" />
     <Compile Include="Features\Cart\Extensions\CartExtensions.cs" />
     <Compile Include="Features\Cart\ViewModels\CartViewModelBase.cs" />
+    <Compile Include="Features\Cart\ViewModels\InviteToCartPageViewModel.cs" />
     <Compile Include="Features\Cart\ViewModels\ShipmentViewModel.cs" />
     <Compile Include="Features\Cart\ViewModels\UpdateShippingMethodViewModel.cs" />
     <Compile Include="Features\Cart\ViewModels\WishListMiniCartViewModel.cs" />
@@ -563,6 +568,7 @@
     <Compile Include="Features\Start\Pages\StartPage.cs" />
     <Compile Include="Features\Cart\Controllers\WishListController.cs" />
     <Compile Include="Features\Cart\Pages\WishListPage.cs" />
+    <Compile Include="Infrastructure\CustomContextModeResolver.cs" />
     <Compile Include="Infrastructure\Facades\CountryManagerFacade.cs" />
     <Compile Include="Infrastructure\Facades\CurrentContactFacade.cs" />
     <Compile Include="Infrastructure\Facades\CustomerContextFacade.cs" />
@@ -808,6 +814,7 @@
     <Content Include="modules\_protected\EPiServer.Cms.TinyMce\EPiServer.Cms.TinyMce.zip" />
     <Content Include="App_Data\GeoLiteCity.dat" />
     <None Include="packages.config" />
+    <Content Include="Views\InviteToCartPage\Index.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

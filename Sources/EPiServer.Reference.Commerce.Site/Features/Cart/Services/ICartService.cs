@@ -10,7 +10,7 @@ namespace EPiServer.Reference.Commerce.Site.Features.Cart.Services
 {
     public interface ICartService
     {
-        AddToCartResult AddToCart(ICart cart, string code, decimal quantity);
+        AddToCartResult AddToCart(ICart cart, string code, decimal quantity, string addedBy);
         void ChangeCartItem(ICart cart, int shipmentId, string code, decimal quantity, string size, string newSize);
         void SetCartCurrency(ICart cart, Currency currency);
         Dictionary<ILineItem, List<ValidationIssue>> ValidateCart(ICart cart);
@@ -18,7 +18,9 @@ namespace EPiServer.Reference.Commerce.Site.Features.Cart.Services
         string DefaultCartName { get; }
         string DefaultWishListName { get; }
         ICart LoadCart(string name);
+        ICart LoadCart(string name, Guid customerId);
         ICart LoadOrCreateCart(string name);
+        ICart LoadOrCreateCart(string name, Guid customerId);
         bool AddCouponCode(ICart cart, string couponCode);
         void RemoveCouponCode(ICart cart, string couponCode);
         void RecreateLineItemsBasedOnShipments(ICart cart, IEnumerable<CartItemViewModel> cartItems, IEnumerable<AddressModel> addresses);

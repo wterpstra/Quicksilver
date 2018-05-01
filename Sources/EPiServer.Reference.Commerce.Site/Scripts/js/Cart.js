@@ -12,12 +12,12 @@
             .on('click', '.jsCartContinueShopping', function () {
                 if ($(this).closest('#cart-dropdown')) {
                     $(this).closest('#cart-dropdown').collapse('hide');
-                }                 
+                }
             })
             .on('click', '.jsWishListContinueShopping', function () {
                 if ($(this).closest('#wishlist-dropdown')) {
                     $(this).closest('#wishlist-dropdown').collapse('hide');
-                }                
+                }
             })
             .on('click', '.jsCartDropdown', function (e) {
                 return ($(e.target).hasClass('btn') || $(e.target).parent().is('a'));
@@ -29,6 +29,11 @@
             }
         });
 
+        
+        var hub = $.connection.coShoppingHub;
+        hub.client.refreshCart = Cart.updateMiniCart;
+        
+        $.connection.hub.start();
     },
     changeShipment: function () {
         var container = $(this).closest('.shipping-method');
@@ -118,6 +123,22 @@
     preventSubmit: function (e) {
         if (e.keyCode == 13) {
             e.preventDefault();
+        }
+    },
+    updateMiniCart: function (cart) {
+        console.log(cart);
+        var miniCart = $('#MiniCart');
+
+        if (miniCart) {
+            $.ajax({
+                type: 'GET',
+                url: '/Cart/MiniCartDetails',
+                success: function (result) {
+                    miniCart.html($(result));
+                    $('.cartItemCountLabel', miniCart.parent()).text($('#CartItemCount', miniCart).val());
+                    $('.cartTotalAmountLabel', miniCart.parent()).text($('#CartTotalAmount', miniCart).val());
+                }
+            });
         }
     }
 };

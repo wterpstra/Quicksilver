@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
+using EPiServer.Reference.Commerce.Site.Infrastructure;
 
 namespace EPiServer.Reference.Commerce.Site.Features.Recommendations.Services
 {
@@ -20,14 +21,14 @@ namespace EPiServer.Reference.Commerce.Site.Features.Recommendations.Services
     public class RecommendationService : IRecommendationService
     {
         private readonly ServiceAccessor<IContentRouteHelper> _contentRouteHelperAccessor;
-        private readonly IContextModeResolver _contextModeResolver;
+        private readonly ServiceAccessor<IContextModeResolver> _contextModeResolver;
         private readonly IProductService _productService;
         private readonly TrackingDataFactory _trackingDataFactory;
         private readonly ITrackingService _trackingService;
 
         public RecommendationService(
             ServiceAccessor<IContentRouteHelper> contentRouteHelperAccessor,
-            IContextModeResolver contextModeResolver,
+            ServiceAccessor<CustomContextModeResolver> contextModeResolver,
             IProductService productService,
             TrackingDataFactory trackingDataFactory,
             ITrackingService trackingService)
@@ -41,7 +42,7 @@ namespace EPiServer.Reference.Commerce.Site.Features.Recommendations.Services
 
         public async Task<TrackingResponseData> TrackProductAsync(HttpContextBase httpContext, string productCode, bool skipRecommendations)
         {
-            if (_contextModeResolver.CurrentMode != ContextMode.Default)
+            if (_contextModeResolver().CurrentMode != ContextMode.Default)
             {
                 return null;
             }
@@ -58,7 +59,7 @@ namespace EPiServer.Reference.Commerce.Site.Features.Recommendations.Services
 
         public async Task<TrackingResponseData> TrackSearchAsync(HttpContextBase httpContext, string searchTerm, IEnumerable<string> productCodes)
         {
-            if (_contextModeResolver.CurrentMode != ContextMode.Default || string.IsNullOrWhiteSpace(searchTerm))
+            if (_contextModeResolver().CurrentMode != ContextMode.Default || string.IsNullOrWhiteSpace(searchTerm))
             {
                 return null;
             }
@@ -69,7 +70,7 @@ namespace EPiServer.Reference.Commerce.Site.Features.Recommendations.Services
 
         public async Task<TrackingResponseData> TrackOrderAsync(HttpContextBase httpContext, IPurchaseOrder order)
         {
-            if (_contextModeResolver.CurrentMode != ContextMode.Default)
+            if (_contextModeResolver().CurrentMode != ContextMode.Default)
             {
                 return null;
             }
@@ -80,7 +81,7 @@ namespace EPiServer.Reference.Commerce.Site.Features.Recommendations.Services
 
         public async Task<TrackingResponseData> TrackCategoryAsync(HttpContextBase httpContext, NodeContent category)
         {
-            if (_contextModeResolver.CurrentMode != ContextMode.Default)
+            if (_contextModeResolver().CurrentMode != ContextMode.Default)
             {
                 return null;
             }
@@ -91,7 +92,7 @@ namespace EPiServer.Reference.Commerce.Site.Features.Recommendations.Services
 
         public async Task<TrackingResponseData> TrackCartAsync(HttpContextBase httpContext)
         {
-            if (_contextModeResolver.CurrentMode != ContextMode.Default)
+            if (_contextModeResolver().CurrentMode != ContextMode.Default)
             {
                 return null;
             }
@@ -103,7 +104,7 @@ namespace EPiServer.Reference.Commerce.Site.Features.Recommendations.Services
 
         public async Task<TrackingResponseData> TrackWishlistAsync(HttpContextBase httpContext)
         {
-            if (_contextModeResolver.CurrentMode != ContextMode.Default)
+            if (_contextModeResolver().CurrentMode != ContextMode.Default)
             {
                 return null;
             }
@@ -114,7 +115,7 @@ namespace EPiServer.Reference.Commerce.Site.Features.Recommendations.Services
 
         public async Task<TrackingResponseData> TrackCheckoutAsync(HttpContextBase httpContext)
         {
-            if (_contextModeResolver.CurrentMode != ContextMode.Default)
+            if (_contextModeResolver().CurrentMode != ContextMode.Default)
             {
                 return null;
             }

@@ -73,7 +73,7 @@ namespace EPiServer.Reference.Commerce.Site.Tests.Features.Cart.Services
         public void AddToCart_ShouldRunPromotionEngine()
         {
             var code = "EAN";
-            _subject.AddToCart(_cart, code, 1);
+            _subject.AddToCart(_cart, code, 1, Guid.Empty.ToString());
 
             _promotionEngineMock.Verify(x => x.Run(_cart, It.IsAny<PromotionEngineSettings>()), Times.Once);
         }
@@ -81,7 +81,7 @@ namespace EPiServer.Reference.Commerce.Site.Tests.Features.Cart.Services
         [Fact]
         public void AddToCart_WhenLineItemNotInCart_ShouldAddToCart()
         {
-            _subject.AddToCart(_cart, "code", 1);
+            _subject.AddToCart(_cart, "code", 1, Guid.Empty.ToString());
 
             Assert.Equal(1, _cart.GetAllLineItems().Single(x => x.Code == "code").Quantity);
         }
@@ -91,7 +91,7 @@ namespace EPiServer.Reference.Commerce.Site.Tests.Features.Cart.Services
         {
             _variationContent.DisplayName = "sample-name";
 
-            _subject.AddToCart(_cart, "code", 1);
+            _subject.AddToCart(_cart, "code", 1, Guid.Empty.ToString());
 
             Assert.Equal("sample-name", _cart.GetAllLineItems().Single(x => x.Code == "code").DisplayName);
         }
@@ -99,8 +99,8 @@ namespace EPiServer.Reference.Commerce.Site.Tests.Features.Cart.Services
         [Fact]
         public void AddToCart_WhenLineItemAlreadyInCart_ShouldIncreaseQuantity()
         {
-            _subject.AddToCart(_cart, "code", 1);
-            _subject.AddToCart(_cart, "code", 1);
+            _subject.AddToCart(_cart, "code", 1, Guid.Empty.ToString());
+            _subject.AddToCart(_cart, "code", 1, Guid.Empty.ToString());
 
             Assert.Equal(2, _cart.GetAllLineItems().Single(x => x.Code == "code").Quantity);
         }
@@ -116,7 +116,7 @@ namespace EPiServer.Reference.Commerce.Site.Tests.Features.Cart.Services
                     return false;
                 });
 
-            var result = _subject.AddToCart(_cart, "SKU1234", 1);
+            var result = _subject.AddToCart(_cart, "SKU1234", 1, Guid.Empty.ToString());
             Assert.Equal<int>(1, result.ValidationMessages.Count);
         }
 
@@ -164,7 +164,7 @@ namespace EPiServer.Reference.Commerce.Site.Tests.Features.Cart.Services
             _contentLoaderMock.Setup(x => x.Get<EntryContentBase>(variant1.ContentLink)).Returns(variant1);
             _contentLoaderMock.Setup(x => x.Get<EntryContentBase>(variant2.ContentLink)).Returns(variant2);
 
-            _subject.AddToCart(_cart, bundle.Code, 1);
+            _subject.AddToCart(_cart, bundle.Code, 1, Guid.Empty.ToString());
 
             Assert.Equal(bundleEntry1.Quantity + bundleEntry2.Quantity, _cart.GetAllLineItems().Sum(x => x.Quantity));
         }
@@ -213,7 +213,7 @@ namespace EPiServer.Reference.Commerce.Site.Tests.Features.Cart.Services
             _contentLoaderMock.Setup(x => x.Get<EntryContentBase>(variant1.ContentLink)).Returns(variant1);
             _contentLoaderMock.Setup(x => x.Get<EntryContentBase>(package.ContentLink)).Returns(package);
 
-            _subject.AddToCart(_cart, bundle.Code, 1);
+            _subject.AddToCart(_cart, bundle.Code, 1, Guid.Empty.ToString());
 
             Assert.Equal(bundleEntry1.Quantity + bundleEntry2.Quantity, _cart.GetAllLineItems().Sum(x => x.Quantity));
         }
@@ -572,7 +572,7 @@ namespace EPiServer.Reference.Commerce.Site.Tests.Features.Cart.Services
                 IsGift = true
             });
 
-            _subject.AddToCart(_cart, skuCode, 1);
+            _subject.AddToCart(_cart, skuCode, 1, Guid.Empty.ToString());
 
             Assert.Equal(2, _cart.GetAllLineItems().Count());
         }

@@ -1,3 +1,5 @@
+using System;
+using System.Text;
 using System.Threading.Tasks;
 using EPiServer.Commerce.Order;
 using EPiServer.Reference.Commerce.Site.Features.Cart.Services;
@@ -6,28 +8,33 @@ using EPiServer.Reference.Commerce.Site.Features.Cart.ViewModels;
 using EPiServer.Reference.Commerce.Site.Features.Recommendations.Services;
 using EPiServer.Reference.Commerce.Site.Infrastructure.Attributes;
 using System.Web.Mvc;
+using EPiServer.Reference.Commerce.Site.Features.Cart.Models;
+using EPiServer.Reference.Commerce.Site.Infrastructure.Facades;
+using Newtonsoft.Json;
 
 namespace EPiServer.Reference.Commerce.Site.Features.Cart.Controllers
 {
     public class CartController : Controller
     {
         private readonly ICartService _cartService;
-        private ICart _cart;
         private readonly IOrderRepository _orderRepository;
         private readonly IRecommendationService _recommendationService;
-        readonly CartViewModelFactory _cartViewModelFactory;
+        private readonly CartViewModelFactory _cartViewModelFactory;
+        private readonly CustomerContextFacade _customerContext;
 
 
         public CartController(
             ICartService cartService,
             IOrderRepository orderRepository,
             IRecommendationService recommendationService,
-            CartViewModelFactory cartViewModelFactory)
+            CartViewModelFactory cartViewModelFactory,
+            CustomerContextFacade customerContext)
         {
             _cartService = cartService;
             _orderRepository = orderRepository;
             _recommendationService = recommendationService;
             _cartViewModelFactory = cartViewModelFactory;
+            _customerContext = customerContext;
         }
 
         [AcceptVerbs(HttpVerbs.Get | HttpVerbs.Post)]
@@ -48,16 +55,16 @@ namespace EPiServer.Reference.Commerce.Site.Features.Cart.Controllers
         [AllowDBWrite]
         public async Task<ActionResult> AddToCart(string code)
         {
-            string warningMessage = string.Empty;
-
             ModelState.Clear();
 
             if (Cart == null)
             {
-                _cart = _cartService.LoadOrCreateCart(_cartService.DefaultCartName);
+                _cart = _cartService.LoadOrCreateCart(_cartService.DefaultCartName, GuestCartAccess?.GuestOfCustomerId ?? _customerContext.CurrentContactId);
             }
 
-            var result = _cartService.AddToCart(Cart, code, 1);
+            var addedBy = GuestCartAccess != null ? GuestCartAccess.Name : _customerContext.CurrentContactId.ToString();
+
+            var result = _cartService.AddToCart(Cart, code, 1, addedBy);
             if (result.EntriesAddedToCart)
             {
                 _orderRepository.Save(Cart);
@@ -70,7 +77,7 @@ namespace EPiServer.Reference.Commerce.Site.Features.Cart.Controllers
 
         [HttpPost]
         [AllowDBWrite]
-        public ActionResult AddToFriendsCart(string code, string email)
+        public async Task<ActionResult> AddToFriendsCart(string code, string email)
         {
             string warningMessage = string.Empty;
 
@@ -81,11 +88,11 @@ namespace EPiServer.Reference.Commerce.Site.Features.Cart.Controllers
                 _cart = _cartService.LoadOrCreateCart(_cartService.DefaultCartName);
             }
 
-            var result = _cartService.AddToCart(Cart, code, 1);
+            var result = _cartService.AddToCart(Cart, code, 1, GuestCartAccess.Name);
             if (result.EntriesAddedToCart)
             {
                 _orderRepository.Save(Cart);
-                _recommendationService.SendCartTrackingData(HttpContext);
+                await _recommendationService.TrackCartAsync(HttpContext);
                 return Redirect("/en/checkout/");
             }
 
@@ -116,9 +123,33 @@ namespace EPiServer.Reference.Commerce.Site.Features.Cart.Controllers
             return LargeCart();
         }
 
+        private ICart _cart;
+
         private ICart Cart
         {
-            get { return _cart ?? (_cart = _cartService.LoadCart(_cartService.DefaultCartName)); }
+            get
+            {
+                if (_cart != null) return _cart;
+
+                return _cart = GuestCartAccess != null 
+                    ? _cartService.LoadCart(_cartService.DefaultCartName, GuestCartAccess.GuestOfCustomerId) 
+                    : _cartService.LoadCart(_cartService.DefaultCartName);
+            }
+        }
+
+
+        private GuestCartAccessModel _guestCartAccess;
+        private GuestCartAccessModel GuestCartAccess
+        {
+            get
+            {
+                if (_guestCartAccess != null) return _guestCartAccess;
+
+                var cookie = Request.Cookies["GuestCartAccess"];
+                if (string.IsNullOrWhiteSpace(cookie?.Value)) return null;
+                _guestCartAccess = JsonConvert.DeserializeObject<GuestCartAccessModel>(Encoding.UTF8.GetString(Convert.FromBase64String(cookie.Value)));
+                return _guestCartAccess;
+            }
         }
     }
 }

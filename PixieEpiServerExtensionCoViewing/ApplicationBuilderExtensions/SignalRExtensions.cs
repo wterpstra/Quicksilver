@@ -8,10 +8,6 @@ namespace PixieEpiServerExtensionCoViewing.ApplicationBuilderExtensions
     {
         public static void SignalRStartUp(this IAppBuilder app)
         {
-            bool.TryParse(ConfigurationManager.AppSettings["EnableCoViewing"], out bool enableSignalR);
-
-            if (!enableSignalR) return;
-
             if (ConfigurationManager.ConnectionStrings["Microsoft.ServiceBus.ConnectionString"] != null)
             {
                 var serviceBusConnectionString = ConfigurationManager.ConnectionStrings["Microsoft.ServiceBus.ConnectionString"].ConnectionString;

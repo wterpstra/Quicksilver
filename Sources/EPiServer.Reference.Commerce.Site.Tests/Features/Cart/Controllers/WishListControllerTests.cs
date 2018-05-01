@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using EPiServer.Commerce.Order;
 using EPiServer.Core;
 using EPiServer.Reference.Commerce.Site.Features.Cart.Controllers;
@@ -48,7 +49,7 @@ namespace EPiServer.Reference.Commerce.Site.Tests.Features.Cart.Controllers
             string code = "Code 1";
 
             await _subject.AddToCart(code);
-            _cartServiceMock.Verify(s => s.AddToCart(It.IsAny<ICart>(), code, 1));
+            _cartServiceMock.Verify(s => s.AddToCart(It.IsAny<ICart>(), code, 1, Guid.Empty.ToString()));
         }
 
         [Fact]
@@ -66,7 +67,7 @@ namespace EPiServer.Reference.Commerce.Site.Tests.Features.Cart.Controllers
             string code = "Non-existing-code";
 
             _cartServiceMock
-                .Setup(x => x.AddToCart(It.IsAny<ICart>(), It.IsAny<string>(), It.IsAny<decimal>()))
+                .Setup(x => x.AddToCart(It.IsAny<ICart>(), It.IsAny<string>(), It.IsAny<decimal>(), Guid.Empty.ToString()))
                 .Returns(new AddToCartResult());
             await _subject.AddToCart(code);
             _orderRepositoryMock.Verify(s => s.Save(It.IsAny<IOrderGroup>()), Times.Never);
@@ -98,7 +99,7 @@ namespace EPiServer.Reference.Commerce.Site.Tests.Features.Cart.Controllers
             _contentLoaderMock.Setup(x => x.Get<StartPage>(ContentReference.StartPage)).Returns(new StartPage());
             _cartServiceMock.Setup(x => x.LoadOrCreateCart(It.IsAny<string>())).Returns(new FakeCart(_marketMock.Object, new Currency("USD")));
             _cartServiceMock
-                .Setup(x => x.AddToCart(It.IsAny<ICart>(), It.IsAny<string>(), It.IsAny<decimal>()))
+                .Setup(x => x.AddToCart(It.IsAny<ICart>(), It.IsAny<string>(), It.IsAny<decimal>(), Guid.Empty.ToString()))
                 .Returns((ICart cart, string code, decimal quantity) =>
                 {
                     return new AddToCartResult

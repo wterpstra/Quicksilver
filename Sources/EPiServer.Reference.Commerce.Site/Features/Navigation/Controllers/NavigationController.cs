@@ -1,4 +1,6 @@
-﻿using EPiServer.Core;
+﻿using System;
+using System.Text;
+using EPiServer.Core;
 using EPiServer.Framework.Localization;
 using EPiServer.Reference.Commerce.Site.Features.Cart.Services;
 using EPiServer.Reference.Commerce.Site.Features.Cart.ViewModelFactories;
@@ -7,6 +9,8 @@ using EPiServer.Reference.Commerce.Site.Features.Start.Pages;
 using EPiServer.SpecializedProperties;
 using EPiServer.Web.Mvc.Html;
 using System.Web.Mvc;
+using EPiServer.Reference.Commerce.Site.Features.Cart.Models;
+using Newtonsoft.Json;
 
 namespace EPiServer.Reference.Commerce.Site.Features.Navigation.Controllers
 {
@@ -34,7 +38,9 @@ namespace EPiServer.Reference.Commerce.Site.Features.Navigation.Controllers
 
         public ActionResult Index(IContent currentContent)
         {
-            var cart = _cartService.LoadCart(_cartService.DefaultCartName);
+            var cart = GuestCartAccess != null 
+                ? _cartService.LoadCart(_cartService.DefaultCartName, GuestCartAccess.GuestOfCustomerId)
+                : _cartService.LoadCart(_cartService.DefaultCartName);
 
             var wishlist = _cartService.LoadCart(_cartService.DefaultWishListName);
             var startPage = _contentLoader.Get<StartPage>(ContentReference.StartPage);
@@ -72,6 +78,20 @@ namespace EPiServer.Reference.Commerce.Site.Features.Navigation.Controllers
             }
 
             return PartialView(viewModel);
+        }
+
+        private GuestCartAccessModel _guestCartAccess;
+        private GuestCartAccessModel GuestCartAccess
+        {
+            get
+            {
+                if (_guestCartAccess != null) return _guestCartAccess;
+
+                var cookie = Request.Cookies["GuestCartAccess"];
+                if (string.IsNullOrWhiteSpace(cookie?.Value)) return null;
+                _guestCartAccess = JsonConvert.DeserializeObject<GuestCartAccessModel>(Encoding.UTF8.GetString(Convert.FromBase64String(cookie.Value)));
+                return _guestCartAccess;
+            }
         }
     }
 }

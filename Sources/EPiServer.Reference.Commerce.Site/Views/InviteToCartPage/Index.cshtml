@@ -1,0 +1,26 @@
+﻿@model EPiServer.Reference.Commerce.Site.Features.Cart.ViewModels.InviteToCartPageViewModel
+
+<form action="@Url.ContentUrl(Model.CurrentPage.ContentLink)" method="post">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="row">
+                <div class="form-group">
+                    @Html.Label("name", "Name")
+                    @Html.TextBox("name", null, new { @class = "form-control" })			
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group">
+                    @Html.Label("email", "Email")
+                    @Html.TextBox("email", null, new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group">
+                    <input type="submit" class="btn btn-primary btn--blue" value="@Html.Translate("/AddressBook/Form/Label/Submit")" />
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</form>

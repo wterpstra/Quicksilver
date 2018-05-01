@@ -72,7 +72,7 @@ namespace EPiServer.Reference.Commerce.Site.Features.Cart.Controllers
                 return WishListMiniCartDetails();
             }
 
-            var result = _cartService.AddToCart(WishList, code, 1);
+            var result = _cartService.AddToCart(WishList, code, 1, null);
             if (result.EntriesAddedToCart)
             {
                 _orderRepository.Save(WishList);

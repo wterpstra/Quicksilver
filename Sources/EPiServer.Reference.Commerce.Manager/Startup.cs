@@ -30,7 +30,6 @@ namespace EPiServer.Reference.Commerce.Manager
 
         public void Configuration(IAppBuilder app)
         {
-            app.SignalRStartUp();
             app.AddCmsAspNetIdentity<SiteUser>(new ApplicationOptions
             {
                 ConnectionStringName = _connectionStringHandler.Commerce.Name
@@ -53,6 +52,8 @@ namespace EPiServer.Reference.Commerce.Manager
                     OnApplyRedirect = (context => context.Response.Redirect(context.RedirectUri))
                 }
             });
+
+            app.SignalRStartUp();
         }
     }
 }

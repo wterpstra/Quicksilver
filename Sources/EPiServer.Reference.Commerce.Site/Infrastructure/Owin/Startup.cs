@@ -44,7 +44,6 @@ namespace EPiServer.Reference.Commerce.Site.Infrastructure.Owin
 
         public void Configuration(IAppBuilder app)
         {
-            app.SignalRStartUp();
             app.AddCmsAspNetIdentity<SiteUser>(new ApplicationOptions
             {
                 ConnectionStringName = _connectionStringHandler.Commerce.Name
@@ -94,6 +93,9 @@ namespace EPiServer.Reference.Commerce.Site.Infrastructure.Owin
 #if MICROSOFT_ACCOUNT_LOGIN_FEATURE
             EnableMicrosoftAccountLogin(app);
 #endif
+
+            app.SignalRStartUp();
+
         }
 
         /// <summary>

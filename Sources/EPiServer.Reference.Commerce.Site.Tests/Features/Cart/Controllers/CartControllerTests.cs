@@ -1,9 +1,11 @@
+using System;
 using System.Threading.Tasks;
 using EPiServer.Commerce.Order;
 using EPiServer.Reference.Commerce.Site.Features.Cart.Controllers;
 using EPiServer.Reference.Commerce.Site.Features.Cart.Services;
 using EPiServer.Reference.Commerce.Site.Features.Cart.ViewModelFactories;
 using EPiServer.Reference.Commerce.Site.Features.Recommendations.Services;
+using EPiServer.Reference.Commerce.Site.Infrastructure.Facades;
 using Moq;
 using Xunit;
 
@@ -43,7 +45,7 @@ namespace EPiServer.Reference.Commerce.Site.Tests.Features.Cart.Controllers
             string code = "Code 1";
 
             await _subject.AddToCart(code);
-            _cartServiceMock.Verify(s => s.AddToCart(It.IsAny<ICart>(), code, 1));
+            _cartServiceMock.Verify(s => s.AddToCart(It.IsAny<ICart>(), code, 1, Guid.Empty.ToString()));
         }
 
         [Fact]
@@ -60,7 +62,7 @@ namespace EPiServer.Reference.Commerce.Site.Tests.Features.Cart.Controllers
             string code = "Non-existing-code";
 
             _cartServiceMock
-                .Setup(x => x.AddToCart(It.IsAny<ICart>(), It.IsAny<string>(), It.IsAny<decimal>()))
+                .Setup(x => x.AddToCart(It.IsAny<ICart>(), It.IsAny<string>(), It.IsAny<decimal>(), Guid.Empty.ToString()))
                 .Returns(new AddToCartResult
                 {
                     EntriesAddedToCart = false
@@ -75,14 +77,16 @@ namespace EPiServer.Reference.Commerce.Site.Tests.Features.Cart.Controllers
         private readonly Mock<ICartService> _cartServiceMock;
         private readonly Mock<IOrderRepository> _orderRepositoryMock;
         private readonly Mock<CartViewModelFactory> _cartViewModelFactoryMock;
+        private readonly Mock<CustomerContextFacade> _customerContextFacadeMock;
 
         public CartControllerTests()
         {
             _cartServiceMock = new Mock<ICartService>();
             _cartViewModelFactoryMock = new Mock<CartViewModelFactory>(null, null, null, null, null);
             _orderRepositoryMock = new Mock<IOrderRepository>();
+            _customerContextFacadeMock = new Mock<CustomerContextFacade>(null);
             _cartServiceMock
-                .Setup(x => x.AddToCart(It.IsAny<ICart>(), "Code 1", It.IsAny<decimal>()))
+                .Setup(x => x.AddToCart(It.IsAny<ICart>(), "Code 1", It.IsAny<decimal>(), Guid.Empty.ToString()))
                 .Returns((ICart cart, string code, decimal quantity) =>
                 {
                     return new AddToCartResult
@@ -91,7 +95,7 @@ namespace EPiServer.Reference.Commerce.Site.Tests.Features.Cart.Controllers
                     };
                 })
                 .Verifiable();
-            _subject = new CartController(_cartServiceMock.Object, _orderRepositoryMock.Object, Mock.Of<IRecommendationService>(), _cartViewModelFactoryMock.Object);
+            _subject = new CartController(_cartServiceMock.Object, _orderRepositoryMock.Object, Mock.Of<IRecommendationService>(), _cartViewModelFactoryMock.Object, _customerContextFacadeMock.Object);
         }
     }
 }
