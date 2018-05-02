@@ -10,6 +10,10 @@ namespace EPiServer.Reference.Commerce.Site.Features.Cart.Hubs
 {
     public class CoShoppingHub : Hub
     {
+        public async Task RedirectTo(string url)
+        {
+            await Clients.Others.onRedirect(url);
+        }
         public override Task OnConnected()
         {
             GuestCartAccessModel guestCartAccess = null;

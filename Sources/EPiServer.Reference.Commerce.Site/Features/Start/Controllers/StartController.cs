@@ -33,32 +33,6 @@ namespace EPiServer.Reference.Commerce.Site.Features.Start.Controllers
             _marketContentFilter = marketContentFilter;
         }
 
-        [CommerceTracking(TrackingType.Home)]
-        [AcceptVerbs(HttpVerbs.Get | HttpVerbs.Post)]
-        public ViewResult Index(StartPage currentPage, string email = "")
-        {
-            var viewModel = new StartPageViewModel()
-            {
-                StartPage = currentPage,
-                Recommendations = this.GetHomeRecommendations().Take(6),
-                Promotions = GetActivePromotions()
-            };
-
-            if (!string.IsNullOrEmpty(email))
-                InviteFreinds(email);
-
-            return View(viewModel);
-        }
-
-        private void InviteFreinds(string email)
-        {
-            var mailService = ServiceLocator.Current.GetInstance<IMailService>();
-            var signalRManager = ServiceLocator.Current.GetInstance<IPixieCoViewingManager>();
-            var link = signalRManager.StartPresenterSession();
-            mailService.Send("Join me", link, email);
-
-        }
-
         protected virtual ContentReference GetCampaignRoot()
         {
             return SalesCampaignFolder.CampaignRoot;

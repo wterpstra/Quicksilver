@@ -25,7 +25,6 @@
                                 <div class="row">
                                     <div class="col-sm-4">
                                         <a href="@cartItem.Url" class="link--black">@cartItem.DisplayName</a>
-
                                         <span class="product-brand xs-vertical-margin">@cartItem.Brand</span>
                                         @if (cartItem.DiscountedUnitPrice.HasValue)
                                         {
@@ -35,6 +34,10 @@
                                         else
                                         {
                                             <span class="product-price xs-vertical-margin">@Helpers.RenderMoney(cartItem.PlacedPrice)</span>
+                                        }
+                                        @if (!string.IsNullOrEmpty(cartItem.FriendName))
+                                        {
+                                            <span class="product-price xs-vertical-margin" style="color: red">Added By: @cartItem.FriendName</span>
                                         }
                                     </div>
                                     <div class="col-sm-5">

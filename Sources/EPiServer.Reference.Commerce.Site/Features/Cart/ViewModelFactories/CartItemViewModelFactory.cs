@@ -43,6 +43,19 @@ namespace EPiServer.Reference.Commerce.Site.Features.Cart.ViewModelFactories
             _cartService = cartService;
         }
 
+        private string SetFriendName(ILineItem lineItem)
+        {
+            var userId = Guid.Empty;
+            var name = Convert.ToString(lineItem.Properties["AddedBy"]);
+            if (string.IsNullOrEmpty(name)) return string.Empty;
+            //Dont set my name
+            if (Guid.TryParse(name, out userId))
+            {
+                return string.Empty;
+            }
+            return name;
+        }
+
         public virtual CartItemViewModel CreateCartItemViewModel(ICart cart, ILineItem lineItem, EntryContentBase entry)
         {
             var viewModel = new CartItemViewModel
@@ -57,7 +70,8 @@ namespace EPiServer.Reference.Commerce.Site.Features.Cart.ViewModelFactories
                 Entry = entry,
                 IsAvailable = _pricingService.GetPrice(entry.Code) != null,
                 DiscountedUnitPrice = GetDiscountedUnitPrice(cart, lineItem),
-                IsGift = lineItem.IsGift
+                IsGift = lineItem.IsGift,
+                FriendName = SetFriendName(lineItem)
             };
 
             var productLink = entry is VariationContent ?

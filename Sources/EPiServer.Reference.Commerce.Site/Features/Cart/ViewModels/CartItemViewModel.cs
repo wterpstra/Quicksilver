@@ -15,10 +15,10 @@ namespace EPiServer.Reference.Commerce.Site.Features.Cart.ViewModels
         public string Url { get; set; }
 
         public string Brand { get; set; }
-        
+
         public Money? DiscountedPrice { get; set; }
 
-		public Money PlacedPrice { get; set; }
+        public Money PlacedPrice { get; set; }
 
         public string Code { get; set; }
 
@@ -35,5 +35,6 @@ namespace EPiServer.Reference.Commerce.Site.Features.Cart.ViewModels
         public string AddressId { get; set; }
 
         public bool IsGift { get; set; }
+        public string FriendName { get; set; }
     }
 }

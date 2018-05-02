@@ -29,11 +29,25 @@
             }
         });
 
-        
         var hub = $.connection.coShoppingHub;
         hub.client.refreshCart = Cart.updateMiniCart;
         
         $.connection.hub.start();
+        hub.on('onRedirect', function (url) {
+            var strconfirm = confirm("Your friend want to show you a link, do you want to redirect to?");
+            if (strconfirm == true) {
+                window.location = url;
+            }
+        });
+        $('.jsSharePageWithFriend').on('click', function (e) {
+            e.preventDefault();
+            var url = window.location.href;
+            //share page with friends
+            hub.invoke("RedirectTo", url).fail(function (e) {
+                console.log("Failed while redirection");
+                console.log(e);
+            });
+        });
     },
     changeShipment: function () {
         var container = $(this).closest('.shipping-method');
