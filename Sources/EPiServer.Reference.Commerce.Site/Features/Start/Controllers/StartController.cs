@@ -33,6 +33,20 @@ namespace EPiServer.Reference.Commerce.Site.Features.Start.Controllers
             _marketContentFilter = marketContentFilter;
         }
 
+        [CommerceTracking(TrackingType.Home)]
+        [AcceptVerbs(HttpVerbs.Get | HttpVerbs.Post)]
+        public ViewResult Index(StartPage currentPage)
+        {
+            var viewModel = new StartPageViewModel()
+            {
+                StartPage = currentPage,
+                Recommendations = this.GetHomeRecommendations().Take(6),
+                Promotions = GetActivePromotions()
+            };
+
+            return View(viewModel);
+        }
+
         protected virtual ContentReference GetCampaignRoot()
         {
             return SalesCampaignFolder.CampaignRoot;
