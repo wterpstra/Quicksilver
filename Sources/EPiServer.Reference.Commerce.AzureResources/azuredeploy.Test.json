@@ -135,13 +135,16 @@
     }
   },
   "variables": {
-    "SiteName": "[concat('resourceGroup().name', '-web')]",
-    "CommerceManagerName": "[concat('resourceGroup().name', '-cm')]",
-    "sqlserverName": "[concat('resourceGroup().name','-sqlserver')]",
-    "storageAccountName": "[concat('resourceGroup().name', '-storage')]",
-    "serviceBusNamespaceName": "[concat('resourceGroup().name', '-servicebus'])",
-    "ContentDBName":  "[concat('resourceGroup().name', '-db-cms')]" ,
-    "CommerceDBName": "[concat('resourceGroup().name', '-db-commerce')]"
+    "SiteName": "[concat(resourceGroup().name, '-web')]",
+    "CommerceManagerName": "[concat(resourceGroup().name, '-cm')]",
+    "sqlserverName": "[concat(resourceGroup().name,'-sqlserver')]",
+    "storageAccountName": "[concat(uniquestring(resourceGroup().id), 'standardsa')]",
+    "serviceBusNamespaceName": "[uniquestring(resourceGroup().id)]",
+    "ContentDBName": "[concat(resourceGroup().name, '-db-cms')]",
+    "CommerceDBName": "[concat(resourceGroup().name, '-db-commerce')]",
+    "defaultSASKeyName": "RootManageSharedAccessKey",
+    "defaultAuthRuleResourceId": "[resourceId('Microsoft.ServiceBus/namespaces/authorizationRules', variables('serviceBusNamespaceName'), variables('defaultSASKeyName'))]",
+    "sbVersion": "2017-04-01"
   },
   "resources": [
     {
@@ -193,7 +196,7 @@
           },
           "properties": {
             "EPiServerAzureBlobs": {
-              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('StorageAccountName'),';AccountKey=', listkeys(resourceId('Microsoft.Storage/storageAccounts', variables('StorageAccountName')), '2015-06-15').key1)]",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('StorageAccountName'),';AccountKey=', listkeys(resourceId('Microsoft.Storage/storageAccounts', variables('StorageAccountName')), '2015-06-15').key1)]",
               "type": "Custom"
             },
             "EPiServerAzureEvents": {
@@ -261,7 +264,7 @@
           },
           "properties": {
             "EPiServerAzureBlobs": {
-              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('StorageAccountName'),';AccountKey=', listkeys(resourceId('Microsoft.Storage/storageAccounts', variables('StorageAccountName')), '2015-06-15').key1)]",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('StorageAccountName'),';AccountKey=', listkeys(resourceId('Microsoft.Storage/storageAccounts', variables('StorageAccountName')), '2015-06-15').key1)]",
               "type": "Custom"
             },
             "EPiServerAzureEvents": {
@@ -363,19 +366,13 @@
       "kind": "Storage"
     },
     {
-      "apiVersion": "2015-08-01",
+      "apiVersion": "2017-04-01",
       "name": "[variables('serviceBusNamespaceName')]",
       "type": "Microsoft.ServiceBus/namespaces",
       "location": "[resourceGroup().location]",
-      "kind": "Messaging",
-      "tags": {
-        "displayName": "ServiceBus"
-      },
       "sku": {
-        "name": "[parameters('serviceBusSku')]",
-        "tier": "[parameters('serviceBusSku')]"
-      },
-      "properties" : {}
+        "name": "[parameters('serviceBusSku')]"
+      }
     }
   ],
   "outputs": {}
