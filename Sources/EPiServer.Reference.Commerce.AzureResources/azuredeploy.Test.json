@@ -2,10 +2,6 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "SiteName": {
-      "type": "string",
-      "minLength": 1
-    },
     "SiteSkuName": {
       "type": "string",
       "defaultValue": "F1",
@@ -26,10 +22,6 @@
       "metadata": {
         "description": "Describes plan's pricing tier and capacity. Check details at https://azure.microsoft.com/en-us/pricing/details/app-service/"
       }
-    },
-    "CommerceManagerName": {
-      "type": "string",
-      "minLength": 1
     },
     "CommerceManagerSkuName": {
       "type": "string",
@@ -58,10 +50,6 @@
     },
     "sqlserverAdminLoginPassword": {
       "type": "securestring"
-    },
-    "ContentDBName": {
-      "type": "string",
-      "minLength": 1
     },
     "ContentDBCollation": {
       "type": "string",
@@ -93,10 +81,6 @@
         "description": "Describes the performance level for Edition"
       }
     },
-    "CommerceDBName": {
-      "type": "string",
-      "minLength": 1
-    },
     "CommerceDBCollation": {
       "type": "string",
       "minLength": 1,
@@ -126,16 +110,42 @@
       "metadata": {
         "description": "Describes the performance level for Edition"
       }
+    },
+    "storageAccountType": {
+      "type": "string",
+      "defaultValue": "Standard_LRS",
+      "allowedValues": [
+        "Standard_LRS",
+        "Standard_ZRS",
+        "Standard_GRS",
+        "Standard_RAGRS",
+        "Premium_LRS"
+      ]
+    },
+    "serviceBusSku": {
+      "type": "string",
+      "allowedValues": [
+        "Basic",
+        "Standard"
+      ],
+      "defaultValue": "Standard",
+      "metadata": {
+        "description": "The messaging tier for service Bus namespace"
+      }
     }
   },
   "variables": {
-    "SiteName": "[parameters('SiteName')]",
-    "CommerceManagerName": "[parameters('CommerceManagerName')]",
-    "sqlserverName": "[resourceGroup().name]"
+    "SiteName": "[concat('resourceGroup().name', '-web')]",
+    "CommerceManagerName": "[concat('resourceGroup().name', '-cm')]",
+    "sqlserverName": "[concat('resourceGroup().name','-sqlserver']",
+    "storageAccountName": "[concat('resourceGroup().name', '-storage')]",
+    "serviceBusNamespaceName": "[concat('resourceGroup().name', '-servicebus']",
+    "ContentDBName": [ "concat('resourceGroup().name', '-db-cms']" ],
+    "CommerceDBName": [ "concat('resourceGroup().name', '-db-commerce']" ]
   },
   "resources": [
     {
-      "name": "[parameters('SiteName')]",
+      "name": "[variables('SiteName')]",
       "type": "Microsoft.Web/serverfarms",
       "location": "[resourceGroup().location]",
       "apiVersion": "2015-08-01",
@@ -147,7 +157,7 @@
         "displayName": "SitePlan"
       },
       "properties": {
-        "name": "[parameters('SiteName')]",
+        "name": "[variables('SiteName')]",
         "numberOfWorkers": 1
       }
     },
@@ -157,19 +167,53 @@
       "location": "[resourceGroup().location]",
       "apiVersion": "2015-08-01",
       "dependsOn": [
-        "[resourceId('Microsoft.Web/serverfarms', parameters('SiteName'))]"
+        "[resourceId('Microsoft.Web/serverfarms', variables('SiteName'))]",
+        "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
+        "[concat('Microsoft.Sql/servers/', variables('sqlserverName'))]",
+        "[concat('Microsoft.ServiceBus/namespaces/', variables('serviceBusNamespaceName'))]"
       ],
       "tags": {
-        "[concat('hidden-related:', resourceId('Microsoft.Web/serverfarms', parameters('SiteName')))]": "Resource",
+        "[concat('hidden-related:', resourceId('Microsoft.Web/serverfarms', variables('SiteName')))]": "Resource",
         "displayName": "Site"
       },
       "properties": {
         "name": "[variables('SiteName')]",
-        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('SiteName'))]"
-      }
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('SiteName'))]"
+      },
+      "resources": [
+        {
+          "name": "connectionstrings",
+          "type": "config",
+          "apiVersion": "2015-08-01",
+          "dependsOn": [
+            "[concat('Microsoft.Web/sites/', variables('SiteName'))]"
+          ],
+          "tags": {
+            "displayName": "ConnectionStrings"
+          },
+          "properties": {
+            "EPiServerAzureBlobs": {
+              "value": "[concat(variables('storageConnectionStringPrefix'), listkeys(variables('storageId'), variables('storageAccountApiVersion')).key1)]",
+              "type": "Custom"
+            },
+            "EPiServerAzureEvents": {
+              "value": "[listkeys(variables('defaultAuthRuleResourceId'), variables('serviceBusApiVersion')).primaryConnectionString]",
+              "type": "Custom"
+            },
+            "EPiServerDB": {
+              "value": "[concat('Server=tcp:', reference(concat('Microsoft.Sql/servers/', variables('sqlserverName'))).fullyQualifiedDomainName, ',1433;Initial Catalog=', variables('ContentDBName'), ';User Id=', parameters('sqlserverAdminLogin'), '@', variables('sqlserverName'), ';Password=', parameters('sqlserverAdminLoginPassword'), ';Trusted_Connection=False;Encrypt=True;Connection Timeout=30;MultipleActiveResultSets=True')]",
+              "type": "SQLAzure"
+            },
+            "EcfSqlConnection": {
+              "value": "[concat('Server=tcp:', reference(concat('Microsoft.Sql/servers/', variables('sqlserverName'))).fullyQualifiedDomainName, ',1433;Initial Catalog=', variables('CommerceDBName'), ';User Id=', parameters('sqlserverAdminLogin'), '@', variables('sqlserverName'), ';Password=', parameters('sqlserverAdminLoginPassword'), ';Trusted_Connection=False;Encrypt=True;Connection Timeout=30;Application Name=ECApplication')]",
+              "type": "SQLAzure"
+            }
+          }
+        }
+      ]
     },
     {
-      "name": "[parameters('CommerceManagerName')]",
+      "name": "[variables('CommerceManagerName')]",
       "type": "Microsoft.Web/serverfarms",
       "location": "[resourceGroup().location]",
       "apiVersion": "2015-08-01",
@@ -181,7 +225,7 @@
         "displayName": "CommerceManagerPlan"
       },
       "properties": {
-        "name": "[parameters('CommerceManagerName')]",
+        "name": "[variables('CommerceManagerName')]",
         "numberOfWorkers": 1
       }
     },
@@ -191,15 +235,18 @@
       "location": "[resourceGroup().location]",
       "apiVersion": "2015-08-01",
       "dependsOn": [
-        "[resourceId('Microsoft.Web/serverfarms', parameters('CommerceManagerName'))]"
+        "[resourceId('Microsoft.Web/serverfarms', variables('CommerceManagerName'))]",
+        "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
+        "[concat('Microsoft.Sql/servers/', variables('sqlserverName'))]",
+        "[concat('Microsoft.ServiceBus/namespaces/', variables('serviceBusNamespaceName'))]"
       ],
       "tags": {
-        "[concat('hidden-related:', resourceId('Microsoft.Web/serverfarms', parameters('CommerceManagerName')))]": "Resource",
+        "[concat('hidden-related:', resourceId('Microsoft.Web/serverfarms', variables('CommerceManagerName')))]": "Resource",
         "displayName": "CommerceManager"
       },
       "properties": {
         "name": "[variables('CommerceManagerName')]",
-        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('CommerceManagerName'))]"
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('CommerceManagerName'))]"
       }
     },
     {
@@ -230,7 +277,7 @@
           }
         },
         {
-          "name": "[parameters('ContentDBName')]",
+          "name": "[variables('ContentDBName')]",
           "type": "databases",
           "location": "[resourceGroup().location]",
           "apiVersion": "2014-04-01-preview",
@@ -251,7 +298,7 @@
           ]
         },
         {
-          "name": "[parameters('CommerceDBName')]",
+          "name": "[variables('CommerceDBName')]",
           "type": "databases",
           "location": "[resourceGroup().location]",
           "apiVersion": "2014-04-01-preview",
@@ -269,6 +316,35 @@
           }
         }
       ]
+    },
+    {
+      "name": "[variables('storageAccountName')]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2016-01-01",
+      "sku": {
+        "name": "[parameters('storageAccountType')]"
+      },
+      "dependsOn": [],
+      "tags": {
+        "displayName": "storageAccount"
+      },
+      "kind": "Storage"
+    },
+    {
+      "apiVersion": "2015-08-01",
+      "name": "[variables('serviceBusNamespaceName')]",
+      "type": "Microsoft.ServiceBus/namespaces",
+      "location": "[resourceGroup().location]",
+      "kind": "Messaging",
+      "tags": {
+        "displayName": "ServiceBus"
+      },
+      "sku": {
+        "name": "[parameters('serviceBusSku')]",
+        "tier": "[parameters('serviceBusSku')]"
+      },
+      "properties" : {}
     }
   ],
   "outputs": {}
