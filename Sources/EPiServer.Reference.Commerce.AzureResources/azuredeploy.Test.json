@@ -137,11 +137,11 @@
   "variables": {
     "SiteName": "[concat('resourceGroup().name', '-web')]",
     "CommerceManagerName": "[concat('resourceGroup().name', '-cm')]",
-    "sqlserverName": "[concat('resourceGroup().name','-sqlserver']",
+    "sqlserverName": "[concat('resourceGroup().name','-sqlserver')]",
     "storageAccountName": "[concat('resourceGroup().name', '-storage')]",
-    "serviceBusNamespaceName": "[concat('resourceGroup().name', '-servicebus']",
-    "ContentDBName": [ "concat('resourceGroup().name', '-db-cms']" ],
-    "CommerceDBName": [ "concat('resourceGroup().name', '-db-commerce']" ]
+    "serviceBusNamespaceName": "[concat('resourceGroup().name', '-servicebus'])",
+    "ContentDBName": [ "concat('resourceGroup().name', '-db-cms'])" ],
+    "CommerceDBName": [ "concat('resourceGroup().name', '-db-commerce'])" ]
   },
   "resources": [
     {
