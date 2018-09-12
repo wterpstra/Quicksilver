@@ -141,7 +141,7 @@
     "storageAccountName": "[concat('resourceGroup().name', '-storage')]",
     "serviceBusNamespaceName": "[concat('resourceGroup().name', '-servicebus'])",
     "ContentDBName": [ "concat('resourceGroup().name', '-db-cms'])" ],
-    "CommerceDBName": [ "concat('resourceGroup().name', '-db-commerce'])" ],
+    "CommerceDBName": [ "concat('resourceGroup().name', '-db-commerce'])" ]
   },
   "resources": [
     {
