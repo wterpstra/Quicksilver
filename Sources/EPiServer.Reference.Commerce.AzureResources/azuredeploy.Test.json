@@ -140,8 +140,8 @@
     "sqlserverName": "[concat('resourceGroup().name','-sqlserver')]",
     "storageAccountName": "[concat('resourceGroup().name', '-storage')]",
     "serviceBusNamespaceName": "[concat('resourceGroup().name', '-servicebus'])",
-    "ContentDBName": [ "concat('resourceGroup().name', '-db-cms'])" ],
-    "CommerceDBName": [ "concat('resourceGroup().name', '-db-commerce'])" ]
+    "ContentDBName":  "[concat('resourceGroup().name', '-db-cms')]" ,
+    "CommerceDBName": "[concat('resourceGroup().name', '-db-commerce')]"
   },
   "resources": [
     {
@@ -193,11 +193,11 @@
           },
           "properties": {
             "EPiServerAzureBlobs": {
-              "value": "[concat([concat('DefaultEndpointsProtocol=https;AccountName=',parameters('StorageAccountName'),';AccountKey=')], listkeys(resourceId('Microsoft.Storage/storageAccounts', variables('StorageAccountName')), variables('storageAccountApiVersion')).key1)]",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('StorageAccountName'),';AccountKey=', listkeys(resourceId('Microsoft.Storage/storageAccounts', variables('StorageAccountName')), '2015-06-15').key1)]",
               "type": "Custom"
             },
             "EPiServerAzureEvents": {
-              "value": "[listkeys(variables('defaultAuthRuleResourceId'), variables('serviceBusApiVersion')).primaryConnectionString]",
+              "value": "[listkeys(resourceId('Microsoft.ServiceBus/namespaces/authorizationRules', variables('serviceBusNamespaceName'), 'RootManageSharedAccessKey'), '2015-08-01').primaryConnectionString]",
               "type": "Custom"
             },
             "EPiServerDB": {
@@ -261,11 +261,11 @@
           },
           "properties": {
             "EPiServerAzureBlobs": {
-              "value": "[concat([concat('DefaultEndpointsProtocol=https;AccountName=',parameters('StorageAccountName'),';AccountKey=')], listkeys(resourceId('Microsoft.Storage/storageAccounts', variables('StorageAccountName')), variables('storageAccountApiVersion')).key1)]",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('StorageAccountName'),';AccountKey=', listkeys(resourceId('Microsoft.Storage/storageAccounts', variables('StorageAccountName')), '2015-06-15').key1)]",
               "type": "Custom"
             },
             "EPiServerAzureEvents": {
-              "value": "[listkeys(variables('defaultAuthRuleResourceId'), variables('serviceBusApiVersion')).primaryConnectionString]",
+              "value": "[listkeys(resourceId('Microsoft.ServiceBus/namespaces/authorizationRules', variables('serviceBusNamespaceName'), 'RootManageSharedAccessKey'), '2015-08-01').primaryConnectionString]",
               "type": "Custom"
             },
             "EPiServerDB": {
