@@ -129,9 +129,9 @@
     }
   },
   "variables": {
-    "SiteName": "[concat('Site', uniqueString(resourceGroup().id))]",
-    "CommerceManagerName": "[concat('CommerceManager', uniqueString(resourceGroup().id))]",
-    "sqlserverName": "[concat('sqlserver', uniqueString(resourceGroup().id))]"
+    "SiteName": "[parameters('SiteName')]",
+    "CommerceManagerName": "[parameters('CommerceManagerName')]",
+    "sqlserverName": "[resourceGroup().name]"
   },
   "resources": [
     {
