@@ -142,8 +142,6 @@
     "serviceBusNamespaceName": "[concat('resourceGroup().name', '-servicebus'])",
     "ContentDBName": [ "concat('resourceGroup().name', '-db-cms'])" ],
     "CommerceDBName": [ "concat('resourceGroup().name', '-db-commerce'])" ],
-    "storageId": "[]",
-    "storageConnectionStringPrefix": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('StorageAccountName'),';AccountKey=')]"
   },
   "resources": [
     {
