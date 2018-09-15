@@ -2,6 +2,10 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
+    "SiteName": {
+      "type": "string",
+      "defaultValue": "[concat(resourceGroup().name, '-web')]"
+    },
     "SiteSkuName": {
       "type": "string",
       "defaultValue": "F1",
@@ -22,6 +26,10 @@
       "metadata": {
         "description": "Describes plan's pricing tier and capacity. Check details at https://azure.microsoft.com/en-us/pricing/details/app-service/"
       }
+    },
+    "CommerceManagerName": {
+      "type": "string",
+      "defaultValue": "[concat(resourceGroup().name, '-cm')]"
     },
     "CommerceManagerSkuName": {
       "type": "string",
@@ -44,12 +52,20 @@
         "description": "Describes plan's pricing tier and capacity. Check details at https://azure.microsoft.com/en-us/pricing/details/app-service/"
       }
     },
-    "sqlserverAdminLogin": {
+    "SQLServerName": {
+      "type": "string",
+      "defaultValue": "[concat(resourceGroup().name,'-sql')]"
+    },
+    "SQLServerAdminLogin": {
       "type": "string",
       "minLength": 1
     },
-    "sqlserverAdminLoginPassword": {
+    "SQLServerAdminLoginPassword": {
       "type": "securestring"
+    },
+    "ContentDBName": {
+      "type": "string",
+      "defaultValue": "[concat(resourceGroup().name, '-sqldb-cms')]"
     },
     "ContentDBCollation": {
       "type": "string",
@@ -81,6 +97,10 @@
         "description": "Describes the performance level for Edition"
       }
     },
+    "CommerceDBName": {
+      "type": "string",
+      "defaultValue": "[concat(resourceGroup().name, '-sqldb-commerce')]"
+    },
     "CommerceDBCollation": {
       "type": "string",
       "minLength": 1,
@@ -111,7 +131,11 @@
         "description": "Describes the performance level for Edition"
       }
     },
-    "storageAccountType": {
+    "StorageAccountName": {
+      "type": "string",
+      "defaultValue": "[concat(uniquestring(resourceGroup().id), 'epiblobs')]"
+    },
+    "StorageAccountType": {
       "type": "string",
       "defaultValue": "Standard_LRS",
       "allowedValues": [
@@ -122,7 +146,11 @@
         "Premium_LRS"
       ]
     },
-    "serviceBusSku": {
+    "ServiceBusNamespaceName": {
+      "type": "string",
+      "defaultValue": "[uniquestring(resourceGroup().id)]"
+    },
+    "ServiceBusSku": {
       "type": "string",
       "allowedValues": [
         "Basic",
@@ -135,20 +163,13 @@
     }
   },
   "variables": {
-    "SiteName": "[concat(resourceGroup().name, '-web')]",
-    "CommerceManagerName": "[concat(resourceGroup().name, '-cm')]",
-    "sqlserverName": "[concat(resourceGroup().name,'-sqlserver')]",
-    "storageAccountName": "[concat(uniquestring(resourceGroup().id), 'standardsa')]",
-    "serviceBusNamespaceName": "[uniquestring(resourceGroup().id)]",
-    "ContentDBName": "[concat(resourceGroup().name, '-db-cms')]",
-    "CommerceDBName": "[concat(resourceGroup().name, '-db-commerce')]",
     "defaultSASKeyName": "RootManageSharedAccessKey",
-    "defaultAuthRuleResourceId": "[resourceId('Microsoft.ServiceBus/namespaces/authorizationRules', variables('serviceBusNamespaceName'), variables('defaultSASKeyName'))]",
+    "defaultAuthRuleResourceId": "[resourceId('Microsoft.ServiceBus/namespaces/authorizationRules', parameters('ServiceBusNamespaceName'), variables('defaultSASKeyName'))]",
     "sbVersion": "2017-04-01"
   },
   "resources": [
     {
-      "name": "[variables('SiteName')]",
+      "name": "[parameters('siteName')]",
       "type": "Microsoft.Web/serverfarms",
       "location": "[resourceGroup().location]",
       "apiVersion": "2015-08-01",
@@ -160,28 +181,28 @@
         "displayName": "SitePlan"
       },
       "properties": {
-        "name": "[variables('SiteName')]",
+        "name": "[parameters('siteName')]",
         "numberOfWorkers": 1
       }
     },
     {
-      "name": "[variables('SiteName')]",
+      "name": "[parameters('siteName')]",
       "type": "Microsoft.Web/sites",
       "location": "[resourceGroup().location]",
       "apiVersion": "2015-08-01",
       "dependsOn": [
-        "[resourceId('Microsoft.Web/serverfarms', variables('SiteName'))]",
-        "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
-        "[concat('Microsoft.Sql/servers/', variables('sqlserverName'))]",
-        "[concat('Microsoft.ServiceBus/namespaces/', variables('serviceBusNamespaceName'))]"
+        "[resourceId('Microsoft.Web/serverfarms', parameters('siteName'))]",
+        "[concat('Microsoft.Storage/storageAccounts/', parameters('storageAccountName'))]",
+        "[concat('Microsoft.Sql/servers/', parameters('SQLServerName'))]",
+        "[concat('Microsoft.ServiceBus/namespaces/', parameters('ServiceBusNamespaceName'))]"
       ],
       "tags": {
-        "[concat('hidden-related:', resourceId('Microsoft.Web/serverfarms', variables('SiteName')))]": "Resource",
+        "[concat('hidden-related:', resourceId('Microsoft.Web/serverfarms', parameters('siteName')))]": "Resource",
         "displayName": "Site"
       },
       "properties": {
-        "name": "[variables('SiteName')]",
-        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('SiteName'))]"
+        "name": "[parameters('siteName')]",
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('siteName'))]"
       },
       "resources": [
         {
@@ -189,26 +210,26 @@
           "type": "config",
           "apiVersion": "2015-08-01",
           "dependsOn": [
-            "[concat('Microsoft.Web/sites/', variables('SiteName'))]"
+            "[concat('Microsoft.Web/sites/', parameters('siteName'))]"
           ],
           "tags": {
             "displayName": "ConnectionStrings"
           },
           "properties": {
             "EPiServerAzureBlobs": {
-              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('StorageAccountName'),';AccountKey=', listkeys(resourceId('Microsoft.Storage/storageAccounts', variables('StorageAccountName')), '2015-06-15').key1)]",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('storageAccountName'),';AccountKey=', listkeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2015-06-15').key1)]",
               "type": "Custom"
             },
             "EPiServerAzureEvents": {
-              "value": "[listkeys(resourceId('Microsoft.ServiceBus/namespaces/authorizationRules', variables('serviceBusNamespaceName'), 'RootManageSharedAccessKey'), '2015-08-01').primaryConnectionString]",
+              "value": "[listkeys(resourceId('Microsoft.ServiceBus/namespaces/authorizationRules', parameters('ServiceBusNamespaceName'), 'RootManageSharedAccessKey'), '2015-08-01').primaryConnectionString]",
               "type": "Custom"
             },
             "EPiServerDB": {
-              "value": "[concat('Server=tcp:', reference(concat('Microsoft.Sql/servers/', variables('sqlserverName'))).fullyQualifiedDomainName, ',1433;Initial Catalog=', variables('ContentDBName'), ';User Id=', parameters('sqlserverAdminLogin'), '@', variables('sqlserverName'), ';Password=', parameters('sqlserverAdminLoginPassword'), ';Trusted_Connection=False;Encrypt=True;Connection Timeout=30;MultipleActiveResultSets=True')]",
+              "value": "[concat('Server=tcp:', reference(concat('Microsoft.Sql/servers/', parameters('SQLServerName'))).fullyQualifiedDomainName, ',1433;Initial Catalog=', parameters('ContentDBName'), ';User Id=', parameters('SQLServerAdminLogin'), '@', parameters('SQLServerName'), ';Password=', parameters('SQLServerAdminLoginPassword'), ';Trusted_Connection=False;Encrypt=True;Connection Timeout=30;MultipleActiveResultSets=True')]",
               "type": "SQLAzure"
             },
             "EcfSqlConnection": {
-              "value": "[concat('Server=tcp:', reference(concat('Microsoft.Sql/servers/', variables('sqlserverName'))).fullyQualifiedDomainName, ',1433;Initial Catalog=', variables('CommerceDBName'), ';User Id=', parameters('sqlserverAdminLogin'), '@', variables('sqlserverName'), ';Password=', parameters('sqlserverAdminLoginPassword'), ';Trusted_Connection=False;Encrypt=True;Connection Timeout=30;Application Name=ECApplication')]",
+              "value": "[concat('Server=tcp:', reference(concat('Microsoft.Sql/servers/', parameters('SQLServerName'))).fullyQualifiedDomainName, ',1433;Initial Catalog=', parameters('CommerceDBName'), ';User Id=', parameters('SQLServerAdminLogin'), '@', parameters('SQLServerName'), ';Password=', parameters('SQLServerAdminLoginPassword'), ';Trusted_Connection=False;Encrypt=True;Connection Timeout=30;Application Name=ECApplication')]",
               "type": "SQLAzure"
             }
           }
@@ -216,7 +237,7 @@
       ]
     },
     {
-      "name": "[variables('CommerceManagerName')]",
+      "name": "[parameters('CommerceManagerName')]",
       "type": "Microsoft.Web/serverfarms",
       "location": "[resourceGroup().location]",
       "apiVersion": "2015-08-01",
@@ -228,28 +249,28 @@
         "displayName": "CommerceManagerPlan"
       },
       "properties": {
-        "name": "[variables('CommerceManagerName')]",
+        "name": "[parameters('CommerceManagerName')]",
         "numberOfWorkers": 1
       }
     },
     {
-      "name": "[variables('CommerceManagerName')]",
+      "name": "[parameters('CommerceManagerName')]",
       "type": "Microsoft.Web/sites",
       "location": "[resourceGroup().location]",
       "apiVersion": "2015-08-01",
       "dependsOn": [
-        "[resourceId('Microsoft.Web/serverfarms', variables('CommerceManagerName'))]",
-        "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
-        "[concat('Microsoft.Sql/servers/', variables('sqlserverName'))]",
-        "[concat('Microsoft.ServiceBus/namespaces/', variables('serviceBusNamespaceName'))]"
+        "[resourceId('Microsoft.Web/serverfarms', parameters('CommerceManagerName'))]",
+        "[concat('Microsoft.Storage/storageAccounts/', parameters('storageAccountName'))]",
+        "[concat('Microsoft.Sql/servers/', parameters('SQLServerName'))]",
+        "[concat('Microsoft.ServiceBus/namespaces/', parameters('ServiceBusNamespaceName'))]"
       ],
       "tags": {
-        "[concat('hidden-related:', resourceId('Microsoft.Web/serverfarms', variables('CommerceManagerName')))]": "Resource",
+        "[concat('hidden-related:', resourceId('Microsoft.Web/serverfarms', parameters('CommerceManagerName')))]": "Resource",
         "displayName": "CommerceManager"
       },
       "properties": {
-        "name": "[variables('CommerceManagerName')]",
-        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('CommerceManagerName'))]"
+        "name": "[parameters('CommerceManagerName')]",
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('CommerceManagerName'))]"
       },
       "resources": [
         {
@@ -257,26 +278,26 @@
           "type": "config",
           "apiVersion": "2015-08-01",
           "dependsOn": [
-            "[concat('Microsoft.Web/sites/', variables('CommerceManagerName'))]"
+            "[concat('Microsoft.Web/sites/', parameters('CommerceManagerName'))]"
           ],
           "tags": {
             "displayName": "ConnectionStrings"
           },
           "properties": {
             "EPiServerAzureBlobs": {
-              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('StorageAccountName'),';AccountKey=', listkeys(resourceId('Microsoft.Storage/storageAccounts', variables('StorageAccountName')), '2015-06-15').key1)]",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('storageAccountName'),';AccountKey=', listkeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2015-06-15').key1)]",
               "type": "Custom"
             },
             "EPiServerAzureEvents": {
-              "value": "[listkeys(resourceId('Microsoft.ServiceBus/namespaces/authorizationRules', variables('serviceBusNamespaceName'), 'RootManageSharedAccessKey'), '2015-08-01').primaryConnectionString]",
+              "value": "[listkeys(resourceId('Microsoft.ServiceBus/namespaces/authorizationRules', parameters('ServiceBusNamespaceName'), 'RootManageSharedAccessKey'), '2015-08-01').primaryConnectionString]",
               "type": "Custom"
             },
             "EPiServerDB": {
-              "value": "[concat('Server=tcp:', reference(concat('Microsoft.Sql/servers/', variables('sqlserverName'))).fullyQualifiedDomainName, ',1433;Initial Catalog=', variables('ContentDBName'), ';User Id=', parameters('sqlserverAdminLogin'), '@', variables('sqlserverName'), ';Password=', parameters('sqlserverAdminLoginPassword'), ';Trusted_Connection=False;Encrypt=True;Connection Timeout=30;MultipleActiveResultSets=True')]",
+              "value": "[concat('Server=tcp:', reference(concat('Microsoft.Sql/servers/', parameters('SQLServerName'))).fullyQualifiedDomainName, ',1433;Initial Catalog=', parameters('ContentDBName'), ';User Id=', parameters('SQLServerAdminLogin'), '@', parameters('SQLServerName'), ';Password=', parameters('SQLServerAdminLoginPassword'), ';Trusted_Connection=False;Encrypt=True;Connection Timeout=30;MultipleActiveResultSets=True')]",
               "type": "SQLAzure"
             },
             "EcfSqlConnection": {
-              "value": "[concat('Server=tcp:', reference(concat('Microsoft.Sql/servers/', variables('sqlserverName'))).fullyQualifiedDomainName, ',1433;Initial Catalog=', variables('CommerceDBName'), ';User Id=', parameters('sqlserverAdminLogin'), '@', variables('sqlserverName'), ';Password=', parameters('sqlserverAdminLoginPassword'), ';Trusted_Connection=False;Encrypt=True;Connection Timeout=30;Application Name=ECApplication')]",
+              "value": "[concat('Server=tcp:', reference(concat('Microsoft.Sql/servers/', parameters('SQLServerName'))).fullyQualifiedDomainName, ',1433;Initial Catalog=', parameters('CommerceDBName'), ';User Id=', parameters('SQLServerAdminLogin'), '@', parameters('SQLServerName'), ';Password=', parameters('SQLServerAdminLoginPassword'), ';Trusted_Connection=False;Encrypt=True;Connection Timeout=30;Application Name=ECApplication')]",
               "type": "SQLAzure"
             }
           }
@@ -284,17 +305,17 @@
       ]
     },
     {
-      "name": "[variables('sqlserverName')]",
+      "name": "[parameters('SQLServerName')]",
       "type": "Microsoft.Sql/servers",
       "location": "[resourceGroup().location]",
       "apiVersion": "2014-04-01-preview",
       "dependsOn": [],
       "tags": {
-        "displayName": "sqlserver"
+        "displayName": "SQLServer"
       },
       "properties": {
-        "administratorLogin": "[parameters('sqlserverAdminLogin')]",
-        "administratorLoginPassword": "[parameters('sqlserverAdminLoginPassword')]"
+        "administratorLogin": "[parameters('SQLServerAdminLogin')]",
+        "administratorLoginPassword": "[parameters('SQLServerAdminLoginPassword')]"
       },
       "resources": [
         {
@@ -303,7 +324,7 @@
           "location": "[resourceGroup().location]",
           "apiVersion": "2014-04-01-preview",
           "dependsOn": [
-            "[resourceId('Microsoft.Sql/servers', variables('sqlserverName'))]"
+            "[resourceId('Microsoft.Sql/servers', parameters('SQLServerName'))]"
           ],
           "properties": {
             "startIpAddress": "0.0.0.0",
@@ -311,12 +332,12 @@
           }
         },
         {
-          "name": "[variables('ContentDBName')]",
+          "name": "[parameters('ContentDBName')]",
           "type": "databases",
           "location": "[resourceGroup().location]",
           "apiVersion": "2014-04-01-preview",
           "dependsOn": [
-            "[resourceId('Microsoft.Sql/servers', variables('sqlserverName'))]"
+            "[resourceId('Microsoft.Sql/servers', parameters('SQLServerName'))]"
           ],
           "tags": {
             "displayName": "ContentDB"
@@ -332,12 +353,12 @@
           ]
         },
         {
-          "name": "[variables('CommerceDBName')]",
+          "name": "[parameters('CommerceDBName')]",
           "type": "databases",
           "location": "[resourceGroup().location]",
           "apiVersion": "2014-04-01-preview",
           "dependsOn": [
-            "[resourceId('Microsoft.Sql/servers', variables('sqlserverName'))]"
+            "[resourceId('Microsoft.Sql/servers', parameters('SQLServerName'))]"
           ],
           "tags": {
             "displayName": "CommerceDB"
@@ -352,12 +373,12 @@
       ]
     },
     {
-      "name": "[variables('storageAccountName')]",
+      "name": "[parameters('storageAccountName')]",
       "type": "Microsoft.Storage/storageAccounts",
       "location": "[resourceGroup().location]",
       "apiVersion": "2016-01-01",
       "sku": {
-        "name": "[parameters('storageAccountType')]"
+        "name": "[parameters('StorageAccountType')]"
       },
       "dependsOn": [],
       "tags": {
@@ -367,11 +388,14 @@
     },
     {
       "apiVersion": "2017-04-01",
-      "name": "[variables('serviceBusNamespaceName')]",
+      "name": "[parameters('ServiceBusNamespaceName')]",
       "type": "Microsoft.ServiceBus/namespaces",
       "location": "[resourceGroup().location]",
       "sku": {
         "name": "[parameters('serviceBusSku')]"
+      },
+      "tags": {
+        "displayName": "ServiceBus"
       }
     }
   ],
