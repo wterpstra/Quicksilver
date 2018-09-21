@@ -377,6 +377,8 @@
             "displayName": "ContentDB"
           },
           "properties": {
+            "createMode": "Copy",
+            "sourceDatabaseId": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/qsdemo-acc/providers/Microsoft.Sql/Servers/qsdemo-acc-sql/databases/qsdemo-acc-sqldb-cms')]",
             "collation": "[parameters('ContentDBCollation')]",
             "edition": "[parameters('ContentDBEdition')]",
             "maxSizeBytes": "1073741824",
@@ -398,6 +400,8 @@
             "displayName": "CommerceDB"
           },
           "properties": {
+            "createMode": "Copy",
+            "sourceDatabaseId": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/qsdemo-acc/providers/Microsoft.Sql/Servers/qsdemo-acc-sql/databases/qsdemo-acc-sqldb-commerce')]",
             "collation": "[parameters('CommerceDBCollation')]",
             "edition": "[parameters('CommerceDBEdition')]",
             "maxSizeBytes": "1073741824",
