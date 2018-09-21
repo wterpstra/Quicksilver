@@ -245,7 +245,8 @@
             "displayName": "AppSettings"
           },
           "properties": {
-            "episerver:ReadOnlyConfigurationAPI": {
+            "EPiServerReadOnlyConfigurationAPI": {
+              "key": "episerver:ReadOnlyConfigurationAPI",
               "value": "true"
             }
           }
@@ -329,7 +330,8 @@
             "displayName": "AppSettings"
           },
           "properties": {
-            "episerver:ReadOnlyConfigurationAPI": {
+            "EPiServerReadOnlyConfigurationAPI": {
+              "key": "episerver:ReadOnlyConfigurationAPI",
               "value": "true"
             }
           }
