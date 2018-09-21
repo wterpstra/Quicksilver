@@ -246,7 +246,7 @@
           },
           "properties": {
             "EPiServerReadOnlyConfigurationAPI": {
-              "key": "episerver:ReadOnlyConfigurationAPI",
+              "name": "episerver:ReadOnlyConfigurationAPI",
               "value": "true"
             }
           }
@@ -331,7 +331,7 @@
           },
           "properties": {
             "EPiServerReadOnlyConfigurationAPI": {
-              "key": "episerver:ReadOnlyConfigurationAPI",
+              "name": "episerver:ReadOnlyConfigurationAPI",
               "value": "true"
             }
           }
