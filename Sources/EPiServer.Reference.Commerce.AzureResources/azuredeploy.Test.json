@@ -438,7 +438,13 @@
     }
   ],
   "outputs": {
-    "storageAccountName": "[parameters('storageAccountName')]",
-    "storageAccountKey": "[listkeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2015-06-15').key1]"
+    "storageAccountName": {
+      "type": "string",
+      "value": "[parameters('storageAccountName')]"
+    },
+    "storageAccountKey": {
+      "type": "string",
+      "value": "[listkeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2015-06-15').key1]"
+    }
   }
 }
